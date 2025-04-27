@@ -1,0 +1,8 @@
+.botbackups/*
+.vscode/*
+discloud/*
+.env
+__pycache__/*
+commands/__pycache__/*
+views/__pycache__/*
+data.db
