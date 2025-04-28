@@ -20,7 +20,7 @@ def setup_commands(bot:commands.Bot):
                 summary += f'#{group_name.ljust(30)}| Quantidade'.ljust(embed_width) + '\n'
                 for item, group, qty in items:
                     if group == group_name:
-                        summary += f' {item.ljust(30)[:30]}| {str(qty).rjust(12)}\n'
+                        summary += f' {item.ljust(30)[:30]}| {'$' + str(qty).rjust(11) if item == 'Dinheiro' else str(qty).rjust(12)}\n'
                 summary += '\n'
             
             embed = discord.Embed(
