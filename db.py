@@ -21,16 +21,15 @@ class Chest(Base):
     id = Column(Integer, primary_key=True, nullable=False)
     user_id = Column(Integer, ForeignKey('USERS.user_id'), nullable=False)
     guild_id = Column(Integer, nullable=False)
-    item = Column(String, ForeignKey('ITEMS.item') ,nullable=False)
+    item_id = Column(Integer, ForeignKey('ITEMS.id'), nullable=False)
     quantity = Column(Integer, nullable=False)
     observations = Column(String, nullable=True)
     created_at = Column(DateTime, nullable=False)
     message_id = Column(Integer, nullable=True)
     channel_id = Column(Integer, nullable=True)
-    guild_id = Column(Integer, nullable=True)
     
-    getUser = Relationship('User', backref='CHEST_LOG', lazy='subquery')
-    getItem = Relationship('Item', backref='CHEST_LOG', lazy='subquery')
+    user = Relationship('User', backref='CHEST_LOG', lazy='subquery')
+    item = Relationship('Item', backref='CHEST_LOG', lazy='subquery')
 
 class Item(Base):
     __tablename__ = 'ITEMS'
@@ -42,6 +41,17 @@ class Item(Base):
     created_by = Column(Integer, ForeignKey('USERS.user_id'), nullable=False)
     created_at = Column(DateTime, nullable=False)
     
-    getUser = Relationship('User', backref='ITEMS', lazy='subquery')
+    user = Relationship('User', backref='ITEMS', lazy='subquery')
+
+class Log(Base):
+    __tablename__ = 'LOGS'
+    
+    id = Column(Integer, primary_key=True, nullable=False)
+    guild = Column(String, nullable=False)
+    user_id = Column(Integer, ForeignKey('USERS.user_id'), nullable=False)
+    description = Column(String, nullable=False)
+    timestamp = Column(DateTime, nullable=False)
+    
+    user = Relationship('User', backref='LOGS', lazy='subquery')
 
 Base.metadata.create_all(engine)

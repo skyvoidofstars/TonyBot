@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 from config import *
-from db import NewSession, Chest
+from db import NewSession, Chest, Item
 from datetime import datetime
 
 
@@ -15,7 +15,8 @@ def setup_commands(bot:commands.Bot):
             usuário = interaction.user
         try:
             session = NewSession()
-            movements = session.query(Chest.item, Chest.quantity, Chest.created_at, Chest.guild_id).filter_by(user_id=usuário.id, guild_id=interaction.guild_id).order_by(Chest.created_at.desc()).limit(movimentações).all()
+            movements = movements = session.query(Item.item, Chest.quantity, Chest.created_at, Chest.guild_id).join(Item, Chest.item_id == Item.id).filter(Chest.user_id == usuário.id, Chest.guild_id == interaction.guild_id).order_by(Chest.created_at.desc()).limit(movimentações).all()
+
             if not movements:
                 await interaction.response.send_message(f'Usuário `{usuário.name}` não possui movimentações registradas!', ephemeral=True)
                 session.close()

@@ -19,12 +19,13 @@ def setup_commands(bot:commands.Bot):
         await interaction.response.defer()
         try:
             session = NewSession()
-            if not session.query(Item).filter_by(item=item).first():
-                await interaction.followup.send(f'Item `{item}` não está cadastrado!')
+            ThisItem = session.query(Item).filter_by(item=item).first()
+            if not ThisItem:
+                await interaction.followup.send(f'Item `{ThisItem.item}` não está cadastrado!')
                 session.close()
                 return
 
-            StockQty = session.query(func.sum(Chest.quantity)).filter_by(item=item, guild_id=interaction.guild_id).scalar()
+            StockQty = session.query(func.sum(Chest.quantity)).filter_by(item_id=ThisItem.id, guild_id=interaction.guild_id).scalar()
             StockDiff = quantidade - StockQty
             
             me = session.query(User).filter_by(user_id=bot.user.id).first()
@@ -43,7 +44,7 @@ def setup_commands(bot:commands.Bot):
             Inventory = Chest(
                 user_id=me.user_id,
                 guild_id=interaction.guild_id,
-                item=item,
+                item_id=ThisItem.id,
                 quantity=StockDiff,
                 observations=f'Ajuste de estoque feito por {interaction.user.display_name}',
                 created_at=datetime.now(brasilia_tz)
@@ -57,6 +58,9 @@ def setup_commands(bot:commands.Bot):
                 timestamp=datetime.now(brasilia_tz)
             )
             
+            DiffPrefix = '+' if StockDiff >= 0 else '-'
+            StockDiff = f'{abs(StockDiff)}'
+            
             if item == 'Dinheiro':
                 StockQty = f'$ {str(StockQty)}'
                 Quantity = f'$ {str(quantidade)}'
@@ -65,10 +69,10 @@ def setup_commands(bot:commands.Bot):
             embed.set_author(name=interaction.user.display_name, icon_url=interaction.user.avatar.url)
             
             embed.add_field(name='👤 Funcionário', value=f'```\n{interaction.user.display_name.ljust(embed_width)}\n```', inline=False)
-            embed.add_field(name='📦 Item', value=f'```\n{item}\n```', inline=True)
+            embed.add_field(name='📦 Item', value=f'```\n{ThisItem.item}\n```', inline=True)
             embed.add_field(name='🔢 Estoque Antigo', value=f'```\n{StockQty}\n```', inline=True)
             embed.add_field(name='🏷️ Estoque Novo', value=f'```\n{Quantity}\n```', inline=True)
-            embed.add_field(name='📈 Diferença', value=f'```diff\n{'+' if StockDiff >= 0 else '-'} {abs(StockDiff)}\n```', inline=True)
+            embed.add_field(name='📈 Diferença', value=f'```diff\n{DiffPrefix} {StockDiff}\n```', inline=True)
             
             embed.set_footer(text=f'ID da movimentação: {Inventory.id}')
             

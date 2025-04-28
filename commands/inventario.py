@@ -10,7 +10,7 @@ def setup_commands(bot:commands.Bot):
     async def inventário(interaction:discord.Interaction):
         try:
             session = NewSession()
-            items = session.query(Chest.item, Item.group_name, func.sum(Chest.quantity)).join(Item, Chest.item == Item.item).filter(Chest.guild_id==interaction.guild_id).group_by(Chest.item).having(func.sum(Chest.quantity) != 0).all()
+            items = session.query(Item.item, Item.group_name, func.sum(Chest.quantity)).join(Item, Chest.item_id == Item.id).filter(Chest.guild_id==interaction.guild_id).group_by(Item.item).having(func.sum(Chest.quantity) != 0).all()
 
             groups = list(set(item[1] for item in items if item[1]))
             groups.sort()

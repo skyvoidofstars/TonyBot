@@ -29,11 +29,11 @@ def setup_commands(bot:commands.Bot):
             )
 
             embed.set_author(name=interaction.user.name, icon_url=interaction.user.display_avatar.url)
-            embed.add_field(name='👤 Funcionário', value=f'```\n{chest.getUser.user_character_name.ljust(embed_width)}\n```', inline=False)
-            embed.add_field(name='📦 Item', value=f'```\n{chest.item}\n```', inline=True)
-            embed.add_field(name='🔢 Quantidade', value=f'```\n{abs(chest.quantity) if chest.item != 'Dinheiro' else '$ ' + str(abs(chest.quantity))}\n```', inline=True)
+            embed.add_field(name='👤 Funcionário', value=f'```\n{chest.user.user_character_name.ljust(embed_width)}\n```', inline=False)
+            embed.add_field(name='📦 Item', value=f'```\n{chest.item.item}\n```', inline=True)
+            embed.add_field(name='🔢 Quantidade', value=f'```\n{chest.quantity if chest.item.item != 'Dinheiro' else '$ ' + str(chest.quantity)}\n```', inline=True)
 
-            await interaction.response.send_message(embed=embed, view=ConfirmRemoveView(session=session, chest=chest, user=interaction.user, bot=bot, entry=chest))
+            await interaction.response.send_message(embed=embed, view=ConfirmRemoveView(session=session, chest=chest, interaction=interaction, bot=bot))
         except Exception as error:
             await interaction.response.send_message(f'Erro genérico!\n{error}', ephemeral=True)
         finally:

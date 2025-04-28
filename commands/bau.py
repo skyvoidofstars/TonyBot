@@ -31,9 +31,10 @@ def setup_commands(bot:commands.Bot):
                 return
             
             user = session.query(User).filter_by(user_id=interaction.user.id).first()
-
-            if not session.query(Item).filter_by(item=item).first():
-                await interaction.followup.send(f'Item `{item}` não está cadastrado!')
+            
+            ThisItem = session.query(Item).filter_by(item=item).first()
+            if not ThisItem:
+                await interaction.followup.send(f'Item `{ThisItem.item}` não está cadastrado!')
                 session.close()
                 return
             if quantidade == 0:
@@ -55,7 +56,7 @@ def setup_commands(bot:commands.Bot):
                 session.refresh(user)
             chest = Chest(
                 user_id=user.user_id,
-                item=item,
+                item_id=ThisItem.id,
                 quantity=abs(quantidade) if ação == 'add' else -abs(quantidade),
                 guild_id=interaction.guild.id,
                 created_at=datetime.now(brasilia_tz),
@@ -64,7 +65,7 @@ def setup_commands(bot:commands.Bot):
             session.add(chest)
             session.commit()
             session.refresh(chest)
-            StockQty = session.query(func.sum(Chest.quantity)).filter_by(item=item).scalar()
+            StockQty = session.query(func.sum(Chest.quantity)).filter_by(item_id=ThisItem.id).scalar()
             embed = discord.Embed(
                 title='Reposição de baú' if ação == 'add' else 'Retirada do baú',
                 color=discord.Color.green() if ação == 'add' else discord.Color.dark_red(),
@@ -80,7 +81,7 @@ def setup_commands(bot:commands.Bot):
             embed.set_author(name=interaction.user.name, icon_url=interaction.user.display_avatar.url)
             
             embed.add_field(name='👤 Funcionário', value=f'```\n{user.user_character_name.ljust(embed_width)}\n```', inline=False)
-            embed.add_field(name='📦 Item', value=f'```\n{item}\n```', inline=True)
+            embed.add_field(name='📦 Item', value=f'```\n{ThisItem.item}\n```', inline=True)
             embed.add_field(name='🔢 Quantidade', value=f'```\n{Quantity}\n```', inline=True)
             embed.add_field(name='🏷️ Em estoque', value=f'```\n{StockQty}\n```', inline=True)
             if observação:
