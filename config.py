@@ -23,3 +23,6 @@ ChestAllowedChannels = [
     1144661772482134128, # canal de testes
     1365147589963415562, # Canal de baú da Los Santos Custom
 ]
+
+# Servidor e canal para logs
+LogGuild, LogChannel = 798279120638574652, 1144661772482134128

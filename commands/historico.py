@@ -21,11 +21,11 @@ def setup_commands(bot:commands.Bot):
                 session.close()
                 return
 
-            summary  = '              Item             | Qtd. | Data e hora'.ljust(embed_width) + '\n'
+            summary  = '              Item           |  Qtd.  | Data e hora'.ljust(embed_width) + '\n'
             for item, qty, timestamp, guild in movements:
                 if guild == interaction.guild_id:
                     prefix = '+' if qty > 0 else '-'
-                    summary += f'{prefix}{item.ljust(30)[:30]}| {str(abs(qty)).rjust(5)}| {timestamp.strftime('%d/%m/%y %H:%M')}\n'
+                    summary += f'{prefix}{item.ljust(28)[:28]}| {str(abs(qty)).rjust(7) if item != 'Dinheiro' else '$' + str(abs(qty)).rjust(6)}| {timestamp.strftime('%d/%m/%y %H:%M')}\n'
 
             embed = discord.Embed(
                 title=f'📃 Histórico de movimentações do baú de {usuário.name}',

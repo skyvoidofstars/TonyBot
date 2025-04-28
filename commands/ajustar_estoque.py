@@ -57,12 +57,17 @@ def setup_commands(bot:commands.Bot):
                 timestamp=datetime.now(brasilia_tz)
             )
             
+            if item == 'Dinheiro':
+                StockQty = f'$ {str(StockQty)}'
+                Quantity = f'$ {str(quantidade)}'
+                StockDiff = f'$ {str(StockDiff)}'
+            
             embed.set_author(name=interaction.user.display_name, icon_url=interaction.user.avatar.url)
             
             embed.add_field(name='👤 Funcionário', value=f'```\n{interaction.user.display_name.ljust(embed_width)}\n```', inline=False)
             embed.add_field(name='📦 Item', value=f'```\n{item}\n```', inline=True)
             embed.add_field(name='🔢 Estoque Antigo', value=f'```\n{StockQty}\n```', inline=True)
-            embed.add_field(name='🏷️ Estoque Novo', value=f'```\n{quantidade}\n```', inline=True)
+            embed.add_field(name='🏷️ Estoque Novo', value=f'```\n{Quantity}\n```', inline=True)
             embed.add_field(name='📈 Diferença', value=f'```diff\n{'+' if StockDiff >= 0 else '-'} {abs(StockDiff)}\n```', inline=True)
             
             embed.set_footer(text=f'ID da movimentação: {Inventory.id}')

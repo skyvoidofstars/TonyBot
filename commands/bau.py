@@ -70,11 +70,18 @@ def setup_commands(bot:commands.Bot):
                 color=discord.Color.green() if ação == 'add' else discord.Color.dark_red(),
                 timestamp=datetime.now(brasilia_tz)
             )
+            
+            Quantity = f'{str(quantidade)}'
+            
+            if item == 'Dinheiro':
+                Quantity = f'$ {str(quantidade)}'
+                StockQty = f'$ {str(StockQty)}'
+            
             embed.set_author(name=interaction.user.name, icon_url=interaction.user.display_avatar.url)
             
             embed.add_field(name='👤 Funcionário', value=f'```\n{user.user_character_name.ljust(embed_width)}\n```', inline=False)
-            embed.add_field(name='📦 Item', value=f'```\n{item.capitalize()}\n```', inline=True)
-            embed.add_field(name='🔢 Quantidade', value=f'```\n{quantidade}\n```', inline=True)
+            embed.add_field(name='📦 Item', value=f'```\n{item}\n```', inline=True)
+            embed.add_field(name='🔢 Quantidade', value=f'```\n{Quantity}\n```', inline=True)
             embed.add_field(name='🏷️ Em estoque', value=f'```\n{StockQty}\n```', inline=True)
             if observação:
                 embed.add_field(name='📝 Observações', value=f'```\n{'\n'.join(textwrap.wrap(observação, width=embed_width))}\n```', inline=False)

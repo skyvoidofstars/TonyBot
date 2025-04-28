@@ -22,7 +22,7 @@ def setup_commands(bot:commands.Bot):
                     if group == group_name:
                         summary += f' {item.ljust(30)[:30]}| {str(qty).rjust(12)}\n'
                 summary += '\n'
-
+            
             embed = discord.Embed(
                 title='📦 Inventário do baú',
                 color=discord.Color.blue(),
