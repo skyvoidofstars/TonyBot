@@ -60,6 +60,7 @@ def setup_commands(bot:commands.Bot):
             
             DiffPrefix = '+' if StockDiff >= 0 else '-'
             StockDiff = f'{abs(StockDiff)}'
+            Quantity = f'{str(quantidade)}'
             
             if item == 'Dinheiro':
                 StockQty = f'$ {str(StockQty)}'
