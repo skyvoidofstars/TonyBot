@@ -34,8 +34,9 @@ def setup_commands(bot:commands.Bot):
             embed.add_field(name='🔢 Quantidade', value=f'```\n{chest.quantity if chest.item.item != 'Dinheiro' else '$ ' + str(chest.quantity)}\n```', inline=True)
 
             await interaction.response.send_message(embed=embed, view=ConfirmRemoveView(session=session, chest=chest, interaction=interaction, bot=bot))
-        except Exception as error:
-            await interaction.response.send_message(f'Erro genérico!\n{error}', ephemeral=True)
+        except Exception as e:
+            await interaction.response.send_message(f'Erro genérico!\n{e}', ephemeral=True)
+            await bot.get_guild(LogGuild).get_channel(LogChannel).send(f'<@129620949090697216>\nErro no comando remover_registro por {interaction.user.name}:\n{e}')
         finally:
             session.close()
         

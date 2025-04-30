@@ -86,6 +86,7 @@ def setup_commands(bot:commands.Bot):
             
         except Exception as e:
             await interaction.followup.send(f'Erro genérico!\n{e}')
+            await bot.get_guild(LogGuild).get_channel(LogChannel).send(f'<@129620949090697216>\nErro no comando ajustar_estoque por {interaction.user.name}:\n{e}')
         finally:
             session.close()
             

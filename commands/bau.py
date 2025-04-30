@@ -94,8 +94,9 @@ def setup_commands(bot:commands.Bot):
             chest.channel_id = msg.channel.id
             session.commit()
 
-        except Exception as error:
-            await interaction.followup.send(f'Erro genérico!\n{error}')
+        except Exception as e:
+            await interaction.followup.send(f'Erro genérico!\n{e}')
+            await bot.get_guild(LogGuild).get_channel(LogChannel).send(f'<@129620949090697216>\nErro no comando apagar por {interaction.user.name}:\n{e}')
             return
         finally:
             session.close()

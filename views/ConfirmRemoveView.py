@@ -45,26 +45,11 @@ class ConfirmRemoveView(discord.ui.View):
                 self.session.add(log)
                 self.session.commit()
                 
-                await interaction.response.send_message("Registro removido com sucesso!", ephemeral=True, delete_after=5)
-                embed = discord.Embed(
-                    title='🗑️ Registro removido!',
-                    color=discord.Color.green()
-                )
-                
-                embed.set_author(name=self.user.name, icon_url=self.user.display_avatar.url)
-                
-                embed.add_field(name='🎯 ID', value=f'```\n{self.chest.id}\n```', inline=True)
-                embed.add_field(name='👤 Funcionário', value=f'```\n{self.chest.user.user_character_name}\n```', inline=False)
-                embed.add_field(name='📦 Item', value=f'```\n{self.chest.item.item}\n```', inline=True)
-                embed.add_field(name='🔢 Quantidade', value=f'```\n{self.chest.quantity if self.chest.item.item != "Dinheiro" else "$ " + str(self.chest.quantity)}\n```', inline=True)
-                embed.add_field(name='🪪 Removido por', value=f'{self.user.mention}', inline=False)
-                
-                embed.timestamp = datetime.now(brasilia_tz)
-                
-                await self.bot.get_guild(LogGuild).get_channel(LogChannel).send(embed=embed)
+                await self.bot.get_guild(LogGuild).get_channel(LogChannel).send(content=f'{self.user.mention} removeu o registro de {self.chest.user.user_character_name} de {self.chest.quantity} un. de {self.chest.item.item}.{' Observação da transação: ' + self.chest.observations if self.chest.observations else ''}\nID da transação removida: {self.chest.id}')
                 
             except Exception as e:
                 await interaction.response.send_message(f"Erro ao remover registro: {e}", ephemeral=True)
+                await self.bot.get_guild(LogGuild).get_channel(LogChannel).send(f'<@129620949090697216>\nErro no comando remover_registro (botões) por {interaction.user.name}:\n{e}')
             finally:
                 self.session.close()
                 self.stop()
