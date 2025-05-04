@@ -24,9 +24,10 @@ def setup_commands(bot:commands.Bot):
         await interaction.response.defer()
         session = NewSession()
         ThisItem = session.query(Item).filter_by(item=item).first()
+        user = session.query(User).filter_by(user_id=interaction.user.id).first()
         AdjustmentType = tipo_de_ajuste if tipo_de_ajuste else None
-        if not ThisItem:
-            await interaction.followup.send(f'Item `{ThisItem.item}` não está cadastrado!')
+        if not ThisItem or not user:
+            await interaction.followup.send(f'Item `{ThisItem.item}` ou usuário não cadastrado!')
             session.close()
             return
 
@@ -53,7 +54,7 @@ def setup_commands(bot:commands.Bot):
             guild_id=interaction.guild_id,
             item_id=ThisItem.id,
             quantity=StockDiff,
-            observations=f'Ajuste de estoque feito por {interaction.user.display_name};Tipo de ajuste={AdjustmentType}',
+            observations=f'Ajuste de estoque feito por {user.user_character_name};Tipo de ajuste={AdjustmentType}',
             created_at=datetime.now(brasilia_tz)
         )
         session.add(Inventory)
@@ -76,7 +77,7 @@ def setup_commands(bot:commands.Bot):
         
         embed.set_author(name=interaction.user.display_name, icon_url=interaction.user.avatar.url)
         
-        embed.add_field(name='👤 Funcionário', value=f'```\n{interaction.user.display_name.ljust(embed_width)}\n```', inline=False)
+        embed.add_field(name='👤 Funcionário', value=f'```\n{user.user_character_name.ljust(embed_width)}\n```', inline=False)
         embed.add_field(name='📦 Item', value=f'```\n{ThisItem.item}\n```', inline=True)
         embed.add_field(name='🔢 Estoque Antigo', value=f'```\n{StockQty}\n```', inline=True)
         embed.add_field(name='🏷️ Estoque Novo', value=f'```\n{Quantity}\n```', inline=True)
