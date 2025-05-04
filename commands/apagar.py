@@ -10,7 +10,7 @@ def setup_commands(bot: commands.Bot):
         try:
             if ctx.message.reference:
                 message = await ctx.channel.fetch_message(ctx.message.reference.message_id)
-                await bot.get_guild(LogGuild).get_channel(LogChannel).send(f'Mensagem apagada: {message.id} usado por {ctx.author.name}:\n"{message.author.mention}: {message.content}')
+                await bot.get_guild(LogGuild).get_channel(LogChannel).send(f'Mensagem apagada: {message.id} usado por {ctx.author.name}:\n{message.author.mention}: "{message.content}"')
                 await message.delete()
         except Exception as e:
             await bot.get_guild(LogGuild).get_channel(LogChannel).send(f'<@129620949090697216>\nErro no comando apagar por {ctx.author.name}:\n{e}')

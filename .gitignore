@@ -2,9 +2,7 @@
 .vscode/*
 discloud/*
 .env
-__pycache__/*
-commands/__pycache__/*
-views/__pycache__/*
+**/__pycache__/*
 *-local.py
 *.db
 config.py

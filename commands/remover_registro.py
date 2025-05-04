@@ -7,36 +7,31 @@ from datetime import datetime
 
 def setup_commands(bot:commands.Bot):
     @bot.tree.command(name='remover_registro', description='Remove um registro do baú')
+    @discord.app_commands.checks.has_any_role(*AllowedRoles)
     @discord.app_commands.describe(id='ID do registro a ser removido')
     async def remover_registro(interaction:discord.Interaction, id:int):
-        try:
-            if not any(role.id in AllowedRoles for role in interaction.user.roles):
-                await interaction.response.send_message('Você não tem permissão para remover registros!', ephemeral=True)
-                return
+        if not any(role.id in AllowedRoles for role in interaction.user.roles):
+            await interaction.response.send_message('Você não tem permissão para remover registros!', ephemeral=True)
+            return
 
-            session = NewSession()
-            chest = session.query(Chest).filter_by(id=id).first()
+        session = NewSession()
+        chest = session.query(Chest).filter_by(id=id).first()
+        session.close()
 
-            if not chest:
-                await interaction.response.send_message(f'ID `{id}` não encontrado!', ephemeral=True)
-                session.close()
-                return
+        if not chest:
+            await interaction.response.send_message(f'ID `{id}` não encontrado!', ephemeral=True)
+            return
 
-            embed = discord.Embed(
-                title='❌ Confirmação de remoção!',
-                color=discord.Color.red(),
-                timestamp=datetime.now(brasilia_tz)
-            )
+        embed = discord.Embed(
+            title='❌ Confirmação de remoção!',
+            color=discord.Color.red(),
+            timestamp=datetime.now(brasilia_tz)
+        )
 
-            embed.set_author(name=interaction.user.name, icon_url=interaction.user.display_avatar.url)
-            embed.add_field(name='👤 Funcionário', value=f'```\n{chest.user.user_character_name.ljust(embed_width)}\n```', inline=False)
-            embed.add_field(name='📦 Item', value=f'```\n{chest.item.item}\n```', inline=True)
-            embed.add_field(name='🔢 Quantidade', value=f'```\n{chest.quantity if chest.item.item != 'Dinheiro' else '$ ' + str(chest.quantity)}\n```', inline=True)
+        embed.set_author(name=interaction.user.name, icon_url=interaction.user.display_avatar.url)
+        embed.add_field(name='👤 Funcionário', value=f'```\n{chest.user.user_character_name.ljust(embed_width)}\n```', inline=False)
+        embed.add_field(name='📦 Item', value=f'```\n{chest.item.item}\n```', inline=True)
+        embed.add_field(name='🔢 Quantidade', value=f'```\n{chest.quantity if chest.item.item != 'Dinheiro' else '$ ' + str(chest.quantity)}\n```', inline=True)
 
-            await interaction.response.send_message(embed=embed, view=ConfirmRemoveView(session=session, chest=chest, interaction=interaction, bot=bot))
-        except Exception as e:
-            await interaction.response.send_message(f'Erro genérico!\n{e}', ephemeral=True)
-            await bot.get_guild(LogGuild).get_channel(LogChannel).send(f'<@129620949090697216>\nErro no comando remover_registro por {interaction.user.name}:\n{e}')
-        finally:
-            session.close()
+        await interaction.response.send_message(embed=embed, view=ConfirmRemoveView(session=session, chest=chest, interaction=interaction, bot=bot))
         

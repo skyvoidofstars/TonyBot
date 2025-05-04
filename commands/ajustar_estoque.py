@@ -12,84 +12,86 @@ def setup_commands(bot:commands.Bot):
         item='Item a ser ajustado',
         quantidade='Quantidade real em estoque'
     )
-    async def ajustar_estoque(interaction: discord.Interaction, item:str, quantidade:int):
-        if not any(role.id in AllowedRoles for role in interaction.user.roles):
-            await interaction.response.send_message('Você não tem permissão para usar esse comando!', ephemeral=True, delete_after=5)
-            return
+    @discord.app_commands.choices(
+        tipo_de_ajuste=[
+            discord.app_commands.Choice(name='Validade ultrapassada', value='Validade ultrapassada')
+        ]
+    )
+    @discord.app_commands.checks.has_any_role(*AllowedRoles)
+    async def ajustar_estoque(interaction: discord.Interaction, item:str, quantidade:int, tipo_de_ajuste:str = ''):
         await interaction.response.defer()
-        try:
-            session = NewSession()
-            ThisItem = session.query(Item).filter_by(item=item).first()
-            if not ThisItem:
-                await interaction.followup.send(f'Item `{ThisItem.item}` não está cadastrado!')
-                session.close()
-                return
+        session = NewSession()
+        ThisItem = session.query(Item).filter_by(item=item).first()
+        AdjustmentType = tipo_de_ajuste if tipo_de_ajuste else None
+        if not ThisItem:
+            await interaction.followup.send(f'Item `{ThisItem.item}` não está cadastrado!')
+            session.close()
+            return
 
-            StockQty = session.query(func.sum(Chest.quantity)).filter_by(item_id=ThisItem.id, guild_id=interaction.guild_id).scalar()
-            StockDiff = quantidade - StockQty
-            
-            me = session.query(User).filter_by(user_id=bot.user.id).first()
-            if not me:
-                me = User(
-                    user_id=bot.user.id,
-                    username=bot.user.name,
-                    user_global_name='Tony, o Mecânico',
-                    user_display_name='Tony, o Mecânico',
-                    user_character_name='Tony, o Mecânico',
-                    created_at=datetime.now(brasilia_tz)
-                )
-                session.add(me)
-                session.commit()
-                        
-            Inventory = Chest(
-                user_id=me.user_id,
-                guild_id=interaction.guild_id,
-                item_id=ThisItem.id,
-                quantity=StockDiff,
-                observations=f'Ajuste de estoque feito por {interaction.user.display_name}',
+        StockQty = session.query(func.sum(Chest.quantity)).filter_by(item_id=ThisItem.id, guild_id=interaction.guild_id).scalar()
+        if not StockQty:
+            StockQty = 0
+        StockDiff = quantidade - StockQty
+        
+        me = session.query(User).filter_by(user_id=bot.user.id).first()
+        if not me:
+            me = User(
+                user_id=bot.user.id,
+                username=bot.user.name,
+                user_global_name='Tony, o Mecânico',
+                user_display_name='Tony, o Mecânico',
+                user_character_name='Tony, o Mecânico',
                 created_at=datetime.now(brasilia_tz)
             )
-            session.add(Inventory)
+            session.add(me)
             session.commit()
-            
-            embed = discord.Embed(
-                title='Ajuste de Estoque',
-                color=discord.Color.orange(),
-                timestamp=datetime.now(brasilia_tz)
-            )
-            
-            DiffPrefix = '+' if StockDiff >= 0 else '-'
-            StockDiff = f'{abs(StockDiff)}'
-            Quantity = f'{str(quantidade)}'
-            
-            if item == 'Dinheiro':
-                StockQty = f'$ {str(StockQty)}'
-                Quantity = f'$ {str(quantidade)}'
-                StockDiff = f'$ {str(StockDiff)}'
-            
-            embed.set_author(name=interaction.user.display_name, icon_url=interaction.user.avatar.url)
-            
-            embed.add_field(name='👤 Funcionário', value=f'```\n{interaction.user.display_name.ljust(embed_width)}\n```', inline=False)
-            embed.add_field(name='📦 Item', value=f'```\n{ThisItem.item}\n```', inline=True)
-            embed.add_field(name='🔢 Estoque Antigo', value=f'```\n{StockQty}\n```', inline=True)
-            embed.add_field(name='🏷️ Estoque Novo', value=f'```\n{Quantity}\n```', inline=True)
-            embed.add_field(name='📈 Diferença', value=f'```diff\n{DiffPrefix} {StockDiff}\n```', inline=True)
-            
-            embed.set_footer(text=f'ID da movimentação: {Inventory.id}')
-            
-            msg = await interaction.followup.send(embed=embed)
-            
-            Inventory.message_id = msg.id
-            Inventory.channel_id = msg.channel.id
-            Inventory.guild_id = interaction.guild_id
-            session.commit()
-            
-        except Exception as e:
-            await interaction.followup.send(f'Erro genérico!\n{e}')
-            await bot.get_guild(LogGuild).get_channel(LogChannel).send(f'<@129620949090697216>\nErro no comando ajustar_estoque por {interaction.user.name}:\n{e}')
-        finally:
-            session.close()
-            
+                    
+        Inventory = Chest(
+            user_id=me.user_id,
+            guild_id=interaction.guild_id,
+            item_id=ThisItem.id,
+            quantity=StockDiff,
+            observations=f'Ajuste de estoque feito por {interaction.user.display_name}{f';Tipo de ajuste={AdjustmentType}' if AdjustmentType else ''}',
+            created_at=datetime.now(brasilia_tz)
+        )
+        session.add(Inventory)
+        session.commit()
+        
+        embed = discord.Embed(
+            title='Ajuste de Estoque',
+            color=discord.Color.orange(),
+            timestamp=datetime.now(brasilia_tz)
+        )
+        
+        DiffPrefix = '+' if StockDiff >= 0 else '-'
+        StockDiff = f'{abs(StockDiff)}'
+        Quantity = f'{str(quantidade)}'
+        
+        if item == 'Dinheiro':
+            StockQty = f'$ {str(StockQty)}'
+            Quantity = f'$ {str(quantidade)}'
+            StockDiff = f'$ {str(StockDiff)}'
+        
+        embed.set_author(name=interaction.user.display_name, icon_url=interaction.user.avatar.url)
+        
+        embed.add_field(name='👤 Funcionário', value=f'```\n{interaction.user.display_name.ljust(embed_width)}\n```', inline=False)
+        embed.add_field(name='📦 Item', value=f'```\n{ThisItem.item}\n```', inline=True)
+        embed.add_field(name='🔢 Estoque Antigo', value=f'```\n{StockQty}\n```', inline=True)
+        embed.add_field(name='🏷️ Estoque Novo', value=f'```\n{Quantity}\n```', inline=True)
+        embed.add_field(name='📈 Diferença', value=f'```diff\n{DiffPrefix} {StockDiff}\n```', inline=True)
+        if AdjustmentType:
+            embed.add_field(name='⚠️ Tipo de Ajuste', value=f'```\n{AdjustmentType}\n```', inline=True)
+        embed.set_footer(text=f'ID da movimentação: {Inventory.id}')
+        
+        msg = await interaction.followup.send(embed=embed)
+        
+        Inventory.message_id = msg.id
+        Inventory.channel_id = msg.channel.id
+        Inventory.guild_id = interaction.guild_id
+        session.commit()
+        
+        session.close()
+        
     @ajustar_estoque.autocomplete('item')
     async def autocomplete_item(interaction: discord.Interaction, current: str):
         session = NewSession()
