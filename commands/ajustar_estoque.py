@@ -10,15 +10,17 @@ def setup_commands(bot:commands.Bot):
     @bot.tree.command(name='ajustar_estoque', description='Ajusta o estoque de um item no baú')
     @discord.app_commands.describe(
         item='Item a ser ajustado',
-        quantidade='Quantidade real em estoque'
+        quantidade='Quantidade real em estoque',
+        tipo_de_ajuste='Tipo de ajuste (padrão: Diferença de estoque)'
     )
     @discord.app_commands.choices(
         tipo_de_ajuste=[
-            discord.app_commands.Choice(name='Validade ultrapassada', value='Validade ultrapassada')
+            discord.app_commands.Choice(name='Validade ultrapassada', value='Validade ultrapassada'),
+            discord.app_commands.Choice(name='Diferença de estoque', value='Diferença de estoque'),
         ]
     )
     @discord.app_commands.checks.has_any_role(*AllowedRoles)
-    async def ajustar_estoque(interaction: discord.Interaction, item:str, quantidade:int, tipo_de_ajuste:str = ''):
+    async def ajustar_estoque(interaction: discord.Interaction, item:str, quantidade:int, tipo_de_ajuste:str = 'Diferença de estoque'):
         await interaction.response.defer()
         session = NewSession()
         ThisItem = session.query(Item).filter_by(item=item).first()
@@ -51,7 +53,7 @@ def setup_commands(bot:commands.Bot):
             guild_id=interaction.guild_id,
             item_id=ThisItem.id,
             quantity=StockDiff,
-            observations=f'Ajuste de estoque feito por {interaction.user.display_name}{f';Tipo de ajuste={AdjustmentType}' if AdjustmentType else ''}',
+            observations=f'Ajuste de estoque feito por {interaction.user.display_name};Tipo de ajuste={AdjustmentType}',
             created_at=datetime.now(brasilia_tz)
         )
         session.add(Inventory)
@@ -79,8 +81,7 @@ def setup_commands(bot:commands.Bot):
         embed.add_field(name='🔢 Estoque Antigo', value=f'```\n{StockQty}\n```', inline=True)
         embed.add_field(name='🏷️ Estoque Novo', value=f'```\n{Quantity}\n```', inline=True)
         embed.add_field(name='📈 Diferença', value=f'```diff\n{DiffPrefix} {StockDiff}\n```', inline=True)
-        if AdjustmentType:
-            embed.add_field(name='⚠️ Tipo de Ajuste', value=f'```\n{AdjustmentType}\n```', inline=True)
+        embed.add_field(name='⚠️ Tipo de Ajuste', value=f'```\n{AdjustmentType}\n```', inline=True)
         embed.set_footer(text=f'ID da movimentação: {Inventory.id}')
         
         msg = await interaction.followup.send(embed=embed)
