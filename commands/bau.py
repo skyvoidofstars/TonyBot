@@ -33,7 +33,7 @@ def setup_commands(bot:commands.Bot):
         
         ThisItem = session.query(Item).filter_by(item=item).first()
         if not ThisItem:
-            await interaction.followup.send(f'Item `{ThisItem.item}` não está cadastrado!')
+            await interaction.followup.send(f'Item `{item}` não está cadastrado!')
             session.close()
             return
         if quantidade == 0:
