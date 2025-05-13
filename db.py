@@ -10,7 +10,6 @@ class User(Base):
     
     user_id = Column(Integer, primary_key=True, nullable=False)
     username = Column(String, nullable=False)
-    user_global_name = Column(String, nullable=False)
     user_display_name = Column(String, nullable=False)
     user_character_name = Column(String, nullable=True)
     created_at = Column(DateTime, nullable=False)

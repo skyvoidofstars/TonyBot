@@ -27,7 +27,6 @@ def setup_commands(bot:commands.Bot):
             user = User(
                 user_id=interaction.user.id,
                 username=interaction.user.name,
-                user_global_name=interaction.user.global_name,
                 user_display_name=interaction.user.display_name,
                 user_character_name=interaction.user.display_name.split('|')[0].strip(),
                 created_at=datetime.now(brasilia_tz)

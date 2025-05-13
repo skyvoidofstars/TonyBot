@@ -41,7 +41,6 @@ def setup_commands(bot:commands.Bot):
             me = User(
                 user_id=bot.user.id,
                 username=bot.user.name,
-                user_global_name='Tony, o Mecânico',
                 user_display_name='Tony, o Mecânico',
                 user_character_name='Tony, o Mecânico',
                 created_at=datetime.now(brasilia_tz)
