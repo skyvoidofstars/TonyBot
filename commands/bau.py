@@ -31,7 +31,7 @@ def setup_commands(bot:commands.Bot):
         
         user = session.query(User).filter_by(user_id=interaction.user.id).first()
         
-        ThisItem = session.query(Item).filter_by(item=item).first()
+        ThisItem = session.query(Item).filter_by(item_name=item).first()
         if not ThisItem:
             await interaction.followup.send(f'Item `{item}` não está cadastrado!')
             session.close()
@@ -54,7 +54,7 @@ def setup_commands(bot:commands.Bot):
             session.refresh(user)
         chest = Chest(
             user_id=user.user_id,
-            item_id=ThisItem.id,
+            item_id=ThisItem.item_id,
             quantity=abs(quantidade) if ação == 'add' else -abs(quantidade),
             guild_id=interaction.guild.id,
             created_at=datetime.now(brasilia_tz),
@@ -63,7 +63,7 @@ def setup_commands(bot:commands.Bot):
         session.add(chest)
         session.commit()
         session.refresh(chest)
-        StockQty = session.query(func.sum(Chest.quantity)).filter_by(item_id=ThisItem.id).scalar()
+        StockQty = session.query(func.sum(Chest.quantity)).filter_by(item_id=ThisItem.item_id).scalar()
         embed = discord.Embed(
             title='Reposição de baú' if ação == 'add' else 'Retirada do baú',
             color=discord.Color.green() if ação == 'add' else discord.Color.dark_red(),
@@ -79,13 +79,13 @@ def setup_commands(bot:commands.Bot):
         embed.set_author(name=interaction.user.name, icon_url=interaction.user.display_avatar.url)
         
         embed.add_field(name='👤 Funcionário', value=f'```\n{user.user_character_name.ljust(embed_width)}\n```', inline=False)
-        embed.add_field(name='📦 Item', value=f'```\n{ThisItem.item}\n```', inline=True)
+        embed.add_field(name='📦 Item', value=f'```\n{ThisItem.item_name}\n```', inline=True)
         embed.add_field(name='🔢 Quantidade', value=f'```\n{Quantity}\n```', inline=True)
         embed.add_field(name='🏷️ Em estoque', value=f'```\n{StockQty}\n```', inline=True)
         if observação:
             embed.add_field(name='📝 Observações', value=f'```\n{'\n'.join(textwrap.wrap(observação, width=embed_width))}\n```', inline=False)
         
-        embed.set_footer(text=f'ID da movimentação: {chest.id}')
+        embed.set_footer(text=f'ID da movimentação: {chest.chest_id}')
         
         msg = await interaction.followup.send(embed=embed)
         chest.message_id = msg.id
@@ -96,7 +96,7 @@ def setup_commands(bot:commands.Bot):
     @bau.autocomplete('item')
     async def autocomplete_item(interaction: discord.Interaction, current: str):
         session = NewSession()
-        items = session.query(Item.item).distinct().order_by(Item.item).all()
+        items = session.query(Item.item_name).distinct().order_by(Item.item_name).all()
         session.close()
 
         choices = [

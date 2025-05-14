@@ -16,11 +16,6 @@ def setup_commands(bot:commands.Bot):
     async def registrar_item(interaction:discord.Interaction, item:str, categoria:str, descrição:str = None):
         await interaction.response.defer()
         session = NewSession()
-
-        if not any(role.id in AllowedRoles for role in interaction.user.roles):
-            await interaction.followup.send('Você não tem permissão para registrar itens!', ephemeral=True)
-            session.close()
-            return
         
         user = session.query(User).filter_by(user_id=interaction.user.id).first()
         if not user:
@@ -35,13 +30,13 @@ def setup_commands(bot:commands.Bot):
             session.commit()
             session.refresh(user)
         
-        if session.query(Item).filter(func.lower(Item.item) == item.lower()).first():
+        if session.query(Item).filter(func.lower(Item.item_name) == item.lower()).first():
             await interaction.followup.send(f'Item `{item}` já está cadastrado!', ephemeral=True)
             session.close()
             return
         
         NewItem = Item(
-            item=item,
+            item_name=item,
             group_name=categoria,
             description=descrição,
             created_by=user.user_id,
@@ -66,7 +61,7 @@ def setup_commands(bot:commands.Bot):
         embed.add_field(name='🏷️ Categoria', value=f'```\n{categoria}\n```', inline=True)
         embed.add_field(name='📝 Descrição', value=f'```\n{descrição if descrição else 'Sem descrição'}\n```', inline=False)
         
-        embed.set_footer(text=f'ID do item: {NewItem.id}')
+        embed.set_footer(text=f'ID do item: {NewItem.item_id}')
         
         await interaction.followup.send(embed=embed)
         

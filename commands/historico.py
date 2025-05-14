@@ -21,13 +21,13 @@ def setup_commands(bot:commands.Bot):
 
         movements = (
             session.query(
-                Chest.id,
-                Item.item,
+                Chest.chest_id,
+                Item.item_name,
                 Chest.quantity,
                 Chest.created_at,
                 Chest.guild_id
             )
-            .join(Item, Chest.item_id == Item.id)
+            .join(Item, Chest.item_id == Item.item_id)
             .filter(Chest.user_id == usuário.id, Chest.guild_id == interaction.guild_id)
             .order_by(Chest.created_at.desc())
             .limit(movimentações)
@@ -64,7 +64,7 @@ def setup_commands(bot:commands.Bot):
     async def item(interaction:discord.Interaction, item:str, movimentações:int = 10):
 
         session = NewSession()
-        item = session.query(Item).filter(Item.item == item).first()
+        item = session.query(Item).filter(Item.item_name == item).first()
 
         if not item:
             await interaction.response.send_message(f'Item `{item}` não encontrado!', ephemeral=True)
@@ -73,21 +73,21 @@ def setup_commands(bot:commands.Bot):
             
         movements = (
             session.query(
-                Chest.id,
+                Chest.chest_id,
                 User.user_character_name,
                 Chest.quantity,
                 Chest.created_at,
                 Chest.guild_id
             )
             .join(User, Chest.user_id == User.user_id)
-            .filter(Chest.item_id == item.id, Chest.guild_id == interaction.guild_id)
+            .filter(Chest.item_id == item.item_id, Chest.guild_id == interaction.guild_id)
             .order_by(Chest.created_at.desc())
             .limit(movimentações)
             .all()
         )
 
         if not movements:
-            await interaction.response.send_message(f'Item `{item.item}` não possui movimentações registradas!', ephemeral=True)
+            await interaction.response.send_message(f'Item `{item.item_name}` não possui movimentações registradas!', ephemeral=True)
             session.close()
             return
 
@@ -98,7 +98,7 @@ def setup_commands(bot:commands.Bot):
                 summary += f'{prefix}{str(id).rjust(5)}| {user.ljust(21)[:21]}| {str(abs(qty)).rjust(7) if item != 'Dinheiro' else '$' + str(abs(qty)).rjust(6)}| {timestamp.strftime('%d/%m/%y %H:%M')}\n'
 
         embed = discord.Embed(
-            title=f'📃 Histórico de movimentações do baú do item {item.item}',
+            title=f'📃 Histórico de movimentações do baú do item {item.item_name}',
             color=discord.Color.blue(),
             timestamp=datetime.now(brasilia_tz)
         )
@@ -110,7 +110,7 @@ def setup_commands(bot:commands.Bot):
     @item.autocomplete('item')
     async def autocomplete_item(interaction: discord.Interaction, current: str):
         session = NewSession()
-        items = session.query(Item.item).distinct().order_by(Item.item).all()
+        items = session.query(Item.item_name).distinct().order_by(Item.item_name).all()
         session.close()
 
         choices = [

@@ -38,14 +38,14 @@ class ConfirmRemoveView(discord.ui.View):
                 log = Log(
                     guild=self.chest.guild_id,
                     user_id=self.user.id,
-                    description=f'Registro de {'reabastecimento ' if self.chest.quantity > 0 else 'retirada'} de {self.chest.quantity}x {self.chest.item.item} de {self.chest.user.user_character_name} removido por {self.user.name}',
+                    description=f'Registro de {'reabastecimento ' if self.chest.quantity > 0 else 'retirada'} de {self.chest.quantity}x {self.chest.item.item_name} de {self.chest.user.user_character_name} removido por {self.user.name}',
                     timestamp=datetime.now(brasilia_tz)
                 )
                 
                 self.session.add(log)
                 self.session.commit()
                 
-                await self.bot.get_guild(LogGuild).get_channel(LogChannel).send(content=f'{self.user.mention} removeu o registro de {self.chest.user.user_character_name} de {self.chest.quantity} un. de {self.chest.item.item}.{' Observação da transação: ' + self.chest.observations if self.chest.observations else ''}\nID da transação removida: {self.chest.id}')
+                await self.bot.get_guild(LogGuild).get_channel(LogChannel).send(content=f'{self.user.mention} removeu o registro de {self.chest.user.user_character_name} de {self.chest.quantity} un. de {self.chest.item.item_name}.{' Observação da transação: ' + self.chest.observations if self.chest.observations else ''}\nID da transação removida: {self.chest.chest_id}')
                 
             except Exception as e:
                 await interaction.response.send_message(f"Erro ao remover registro: {e}", ephemeral=True)

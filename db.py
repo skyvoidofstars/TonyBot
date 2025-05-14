@@ -17,10 +17,10 @@ class User(Base):
 class Chest(Base):
     __tablename__ = 'CHEST_LOG'
     
-    id = Column(Integer, primary_key=True, nullable=False)
+    chest_id = Column(Integer, primary_key=True, nullable=False)
     user_id = Column(Integer, ForeignKey('USERS.user_id'), nullable=False)
     guild_id = Column(Integer, nullable=False)
-    item_id = Column(Integer, ForeignKey('ITEMS.id'), nullable=False)
+    item_id = Column(Integer, ForeignKey('ITEMS.item_id'), nullable=False)
     quantity = Column(Integer, nullable=False)
     observations = Column(String, nullable=True)
     created_at = Column(DateTime, nullable=False)
@@ -33,8 +33,8 @@ class Chest(Base):
 class Item(Base):
     __tablename__ = 'ITEMS'
 
-    id = Column(Integer, primary_key=True, nullable=False)
-    item = Column(String, nullable=False)
+    item_id = Column(Integer, primary_key=True, nullable=False)
+    item_name = Column(String, nullable=False)
     group_name = Column(String, nullable=False)
     description = Column(String, nullable=True)
     created_by = Column(Integer, ForeignKey('USERS.user_id'), nullable=False)
