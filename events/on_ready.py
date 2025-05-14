@@ -7,7 +7,7 @@ def get_latest_commit_info(repo_path="."):
     repo = Repo(repo_path)
     commit = repo.head.commit
     
-    diff = commit.diff(None, create_patch=False)
+    diff = commit.diff(commit.parents[0])
 
     lines = []
 
