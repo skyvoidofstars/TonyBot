@@ -14,6 +14,6 @@ def setup_commands(bot:commands.Bot):
                     if user == ctx.me:
                         await message.remove_reaction(reaction.emoji, ctx.me)
         except Exception as e:
-            await bot.get_guild(LogGuild).get_channel(LogChannel).send(f'<@129620949090697216>\nErro no comando react por {ctx.author.name}:\n{e}')
+            await bot.get_guild(LogGuild).get_channel(LogChannel).send(f'<@{MentionID}>\nErro no comando react por {ctx.author.name}:\n{e}')
         finally:
             await ctx.message.delete()

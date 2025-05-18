@@ -49,7 +49,7 @@ class ConfirmRemoveView(discord.ui.View):
                 
             except Exception as e:
                 await interaction.response.send_message(f"Erro ao remover registro: {e}", ephemeral=True)
-                await self.bot.get_guild(LogGuild).get_channel(LogChannel).send(f'<@129620949090697216>\nErro no comando remover_registro (botões) por {interaction.user.name}:\n{e}')
+                await self.bot.get_guild(LogGuild).get_channel(LogChannel).send(f'<@{MentionID}>\nErro no comando remover_registro (botões) por {interaction.user.name}:\n{e}')
             finally:
                 self.session.close()
                 self.stop()

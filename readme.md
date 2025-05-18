@@ -23,4 +23,8 @@ ChestAllowedChannels = [
 
 # Discord server id and channel id for bot logs
 LogGuild, LogChannel = 000000000000000000, 000000000000000000
+
+# ID to be mentioned in errors or initializations
+# 000000000000000000 to user or '&000000000000000000' to roles
+MentionID = 000000000000000000
 ```

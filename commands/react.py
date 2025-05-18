@@ -12,6 +12,6 @@ def setup_commands(bot:commands.Bot):
                 message = await ctx.channel.fetch_message(ctx.message.reference.message_id)
                 await message.add_reaction(reaction)
         except Exception as e:
-            await bot.get_guild(LogGuild).get_channel(LogChannel).send(f'<@129620949090697216>\nErro no comando react por {ctx.author.name}:\n{e}')
+            await bot.get_guild(LogGuild).get_channel(LogChannel).send(f'<@{MentionID}>\nErro no comando react por {ctx.author.name}:\n{e}')
         finally:
             await ctx.message.delete()

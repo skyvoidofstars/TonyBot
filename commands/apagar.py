@@ -24,6 +24,6 @@ def setup_commands(bot: commands.Bot):
                 session.close()
                 await message.delete()
         except Exception as e:
-            await bot.get_guild(LogGuild).get_channel(LogChannel).send(f'<@129620949090697216>\nErro no comando apagar por {ctx.author.name}:\n{e}')
+            await bot.get_guild(LogGuild).get_channel(LogChannel).send(f'<@{MentionID}>\nErro no comando apagar por {ctx.author.name}:\n{e}')
         finally:
             await ctx.message.delete()
