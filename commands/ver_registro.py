@@ -28,7 +28,7 @@ def setup_commands(bot:commands.Bot):
         )
         
         Quantity = f'{str(chest.quantity)}'
-        StockQty = session.query(func.sum(Chest.quantity)).filter(Chest.chest_id <= chest.item_id).scalar()
+        StockQty = session.query(func.sum(Chest.quantity)).filter(Chest.item_id == chest.item_id, Chest.created_at <= chest.created_at).scalar()
         
         if chest.item.item_name == 'Dinheiro':
             Quantity = f'$ {str(chest.quantity)}'
