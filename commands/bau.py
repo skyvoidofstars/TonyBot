@@ -3,7 +3,9 @@ from discord.ext import commands
 from config import *
 from db import NewSession, User, Chest, Item
 from sqlalchemy import func
+from sqlalchemy.orm import Session
 from datetime import datetime
+from utils.user_manager import get_or_create_user
 
 def setup_commands(bot:commands.Bot):
     @bot.tree.command(name='baú', description='Realiza movimentações no baú')
@@ -20,7 +22,7 @@ def setup_commands(bot:commands.Bot):
     )
     async def bau(interaction:discord.Interaction, ação: str, item: str, quantidade: int, observação:str = None):
         await interaction.response.defer()
-        session = NewSession()
+        session: Session = NewSession()
         if interaction.channel_id not in ChestAllowedChannels:
             AllowedChannel = session.query(Chest.channel_id).filter_by(guild_id=interaction.guild.id).scalar()
             if AllowedChannel:
@@ -29,30 +31,17 @@ def setup_commands(bot:commands.Bot):
                 await interaction.followup.send('Nenhum canal permitido configurado para esse servidor!')
             return
         
-        user = session.query(User).filter_by(user_id=interaction.user.id).first()
-        
         ThisItem = session.query(Item).filter_by(item_name=item).first()
-        if not ThisItem:
-            await interaction.followup.send(f'Item `{item}` não está cadastrado!')
+        if not ThisItem or quantidade == 0:
+            await interaction.followup.send(f'Item `{item}` não está cadastrado ou quantidade não é válida!')
             session.close()
             return
-        if quantidade == 0:
-            await interaction.followup.send('Quantidade deve ser diferente de zero!')
-            session.close()
-            return
-        quantidade = abs(quantidade)
-        if not user:
-            user = User(
-                user_id=interaction.user.id,
-                username=interaction.user.name,
-                user_display_name=interaction.user.display_name,
-                user_character_name=interaction.user.display_name.split('|')[0].strip(),
-                created_at=datetime.now(brasilia_tz)
-            )
-            session.add(user)
-            session.commit()
-            session.refresh(user)
-        chest = Chest(
+        
+        quantidade: int = abs(quantidade)
+
+        user: User = get_or_create_user(session=session, discord_user=interaction.user)
+        
+        chest: Chest = Chest(
             user_id=user.user_id,
             item_id=ThisItem.item_id,
             quantity=abs(quantidade) if ação == 'add' else -abs(quantidade),
@@ -70,11 +59,11 @@ def setup_commands(bot:commands.Bot):
             timestamp=datetime.now(brasilia_tz)
         )
         
-        Quantity = f'{str(quantidade)}'
+        Quantity: str= f'{str(quantidade)}'
         
         if item == 'Dinheiro':
-            Quantity = f'$ {str(quantidade)}'
-            StockQty = f'$ {str(StockQty)}'
+            Quantity: str = f'$ {str(quantidade)}'
+            StockQty: str = f'$ {str(StockQty)}'
         
         embed.set_author(name=interaction.user.name, icon_url=interaction.user.display_avatar.url)
         
@@ -87,7 +76,7 @@ def setup_commands(bot:commands.Bot):
         
         embed.set_footer(text=f'ID da movimentação: {chest.chest_id}')
         
-        msg = await interaction.followup.send(embed=embed)
+        msg: discord.Message = await interaction.followup.send(embed=embed)
         chest.message_id = msg.id
         chest.channel_id = msg.channel.id
         session.commit()
@@ -95,8 +84,8 @@ def setup_commands(bot:commands.Bot):
         
     @bau.autocomplete('item')
     async def autocomplete_item(interaction: discord.Interaction, current: str):
-        session = NewSession()
-        items = session.query(Item.item_name).distinct().order_by(Item.item_name).all()
+        session: Session = NewSession()
+        items: Item = session.query(Item.item_name).distinct().order_by(Item.item_name).all()
         session.close()
 
         choices = [

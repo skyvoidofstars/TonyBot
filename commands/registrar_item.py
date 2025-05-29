@@ -2,8 +2,10 @@ import discord
 from discord.ext import commands
 from config import *
 from sqlalchemy import func
+from sqlalchemy.orm import Session
 from db import NewSession, User, Item
 from datetime import datetime
+from utils.user_manager import get_or_create_user
 
 def setup_commands(bot:commands.Bot):
     @bot.tree.command(name='registrar_item', description='Registra um item no sistema')
@@ -15,27 +17,16 @@ def setup_commands(bot:commands.Bot):
     )
     async def registrar_item(interaction:discord.Interaction, item:str, categoria:str, descrição:str = None):
         await interaction.response.defer()
-        session = NewSession()
+        session: Session = NewSession()
         
-        user = session.query(User).filter_by(user_id=interaction.user.id).first()
-        if not user:
-            user = User(
-                user_id=interaction.user.id,
-                username=interaction.user.name,
-                user_display_name=interaction.user.display_name,
-                user_character_name=interaction.user.display_name.split('|')[0].strip(),
-                created_at=datetime.now(brasilia_tz)
-            )
-            session.add(user)
-            session.commit()
-            session.refresh(user)
+        user: User = get_or_create_user(sesstion=session, discord_user=interaction.user)
         
         if session.query(Item).filter(func.lower(Item.item_name) == item.lower()).first():
             await interaction.followup.send(f'Item `{item}` já está cadastrado!', ephemeral=True)
             session.close()
             return
         
-        NewItem = Item(
+        NewItem: Item = Item(
             item_name=item,
             group_name=categoria,
             description=descrição,
@@ -49,7 +40,7 @@ def setup_commands(bot:commands.Bot):
         
         print(f'{datetime.now().strftime("%Y-%m-%d %H:%M:%S")} Item `{item}` registrado por {user.user_character_name} ({user.user_id})')
 
-        embed = discord.Embed(
+        embed: discord.Embed = discord.Embed(
             title='Item registrado com sucesso!',
             color=discord.Color.green(),
             timestamp=datetime.now(brasilia_tz)
@@ -67,13 +58,13 @@ def setup_commands(bot:commands.Bot):
         
     @registrar_item.autocomplete('categoria')
     async def autocomplete_categoria(interaction: discord.Interaction, current: str):
-        session = NewSession()
-        categorias = session.query(Item.group_name).distinct().order_by(Item.group_name).all()
+        session: Session = NewSession()
+        categorias: Item = session.query(Item.group_name).distinct().order_by(Item.group_name).all()
         session.close()
 
         choices = [
             discord.app_commands.Choice(name=c[0], value=c[0])
             for c in categorias if c[0] and current.lower() in c[0].lower()
-        ]
+        ][:25]
 
         await interaction.response.autocomplete(choices)
