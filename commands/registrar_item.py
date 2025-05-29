@@ -19,7 +19,7 @@ def setup_commands(bot:commands.Bot):
         await interaction.response.defer()
         session: Session = NewSession()
         
-        user: User = get_or_create_user(sesstion=session, discord_user=interaction.user)
+        user: User = get_or_create_user(session=session, discord_user=interaction.user)
         
         if session.query(Item).filter(func.lower(Item.item_name) == item.lower()).first():
             await interaction.followup.send(f'Item `{item}` já está cadastrado!', ephemeral=True)
