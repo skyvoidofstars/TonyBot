@@ -13,7 +13,6 @@ def setup_commands(bot:commands.Bot):
 
         session = NewSession()
         chest = session.query(Chest).filter_by(chest_id=id).first()
-        session.close()
 
         if not chest:
             await interaction.response.send_message(f'ID `{id}` não encontrado!', ephemeral=True)
@@ -31,4 +30,5 @@ def setup_commands(bot:commands.Bot):
         embed.add_field(name='🔢 Quantidade', value=f'```\n{chest.quantity if chest.item.item_name != 'Dinheiro' else '$ ' + str(chest.quantity)}\n```', inline=True)
 
         await interaction.response.send_message(embed=embed, view=ConfirmRemoveView(session=session, chest=chest, interaction=interaction, bot=bot))
+        session.close()
         
