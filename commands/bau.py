@@ -9,7 +9,7 @@ from utils.user_manager import get_or_create_user
 
 async def _is_valid_channel(bot: commands.Bot, interaction: discord.Interaction, session: Session) -> bool:
     if interaction.channel.id not in ChestAllowedChannels:
-        AllowedChannel: Chest | None = session.query(Chest.channel_id).filter_by(guild_id=interaction.guild.id).scalar()
+        AllowedChannel: int | None = session.query(Chest.channel_id).filter_by(guild_id=interaction.guild.id).scalar()
         if AllowedChannel:
             await interaction.followup.send(f'Esse comando só pode ser usado em {bot.get_channel(AllowedChannel).mention}!')
         else:
@@ -17,10 +17,47 @@ async def _is_valid_channel(bot: commands.Bot, interaction: discord.Interaction,
         return False
     return True
 
+def _format_by_item_name(item: str, value: int) -> str:
+    match item:
+        case 'Dinheiro':
+            return f'$ {str(value)}'
+        case _:
+            return str(value)
+        
+def _new_embed(interaction: discord.Interaction, session: Session, chest: Chest, mov_type: int) -> discord.Embed:
+
+    _item_name: str = chest.item.item_name
+    _observations: str | None = chest.observations
+    _title: str = 'Reposição de baú' if mov_type == 1 else 'Retirada de baú'
+    _embed_color: discord.Color = discord.Color.green() if mov_type == 1 else discord.Color.dark_red()
+    _employee: str = chest.user.user_character_name.ljust(embed_width)
+    _int_stock_qty: int = session.query(func.sum(Chest.quantity)).filter_by(item_id=chest.item.item_id, guild_id=interaction.guild.id).scalar() or 0
+    _quantity: str = _format_by_item_name(item=_item_name, value=abs(chest.quantity))
+    _stock_qty: str = _format_by_item_name(item=_item_name, value=_int_stock_qty)
+
+    _embed: discord.Embed = discord.Embed(
+            title = _title,
+            color = _embed_color,
+            timestamp = datetime.now(brasilia_tz)
+        )
+
+    _embed.set_author(name=interaction.user.name, icon_url=interaction.user.display_avatar.url)
+    
+    _embed.add_field(name='👤 Funcionário', value=f'```\n{_employee}\n```', inline=False)
+    _embed.add_field(name='📦 Item', value=f'```\n{_item_name}\n```', inline=True)
+    _embed.add_field(name='🔢 Quantidade', value=f'```\n{_quantity}\n```', inline=True)
+    _embed.add_field(name='🏷️ Em estoque', value=f'```\n{_stock_qty}\n```', inline=True)
+    if _observations:
+        _embed.add_field(name='📝 Observações', value=f'```\n{'\n'.join(textwrap.wrap(_observations, width=embed_width))}\n```', inline=False)
+    
+    _embed.set_footer(text=f'ID da movimentação: {chest.chest_id}')
+
+    return _embed
+
 def setup_commands(bot:commands.Bot):
     bau: discord.app_commands.Group = discord.app_commands.Group(name='baú', description='Realiza movimentações no baú')
 
-    @bau.command(name='adicionar', description='Adiciona um item ao baú')
+    @bau.command(name='adicionar', description='Adicionar um item ao baú')
     @discord.app_commands.describe(
         item='Nome do item a ser adicionado.',
         quantidade='Quantidade do item (deve ser maior que zero).',
@@ -28,19 +65,19 @@ def setup_commands(bot:commands.Bot):
     )
     async def adicionar(interaction: discord.Interaction, item: str, quantidade: int, observação: str = None):
         await interaction.response.defer()
+        quantidade = abs(quantidade)
         session: Session = NewSession()
-        ThisItem = session.query(Item).filter_by(item_name=item).first()
 
         if not await _is_valid_channel(bot=bot, interaction=interaction, session=session):
             session.close()
             return
 
+        ThisItem = session.query(Item).filter_by(item_name=item).first()
         if not ThisItem or quantidade == 0:
             await interaction.followup.send(f'Item `{item}` não está cadastrado ou quantidade não é válida!')
             session.close()
             return
         
-        quantidade = abs(quantidade)
         user: User = get_or_create_user(session=session, discord_user=interaction.user)
 
         chest: Chest = Chest(
@@ -51,32 +88,12 @@ def setup_commands(bot:commands.Bot):
             created_at=datetime.now(brasilia_tz),
             observations=observação,
         )
+
         session.add(chest)
         session.commit()
         session.refresh(chest)
 
-        Quantity: str = str(quantidade)
-        StockQty: int = session.query(func.sum(Chest.quantity)).filter_by(item_id=ThisItem.item_id, guild_id=interaction.guild.id).scalar()
-        if item == 'Dinheiro':
-            Quantity: str = f'$ {str(quantidade)}'
-            StockQty: str = f'$ {str(StockQty)}'
-        
-        embed: discord.Embed = discord.Embed(
-            title='Reposição de baú',
-            color=discord.Color.green(),
-            timestamp=datetime.now(brasilia_tz)
-        )
-
-        embed.set_author(name=interaction.user.name, icon_url=interaction.user.display_avatar.url)
-        
-        embed.add_field(name='👤 Funcionário', value=f'```\n{user.user_character_name.ljust(embed_width)}\n```', inline=False)
-        embed.add_field(name='📦 Item', value=f'```\n{ThisItem.item_name}\n```', inline=True)
-        embed.add_field(name='🔢 Quantidade', value=f'```\n{Quantity}\n```', inline=True)
-        embed.add_field(name='🏷️ Em estoque', value=f'```\n{StockQty}\n```', inline=True)
-        if observação:
-            embed.add_field(name='📝 Observações', value=f'```\n{'\n'.join(textwrap.wrap(observação, width=embed_width))}\n```', inline=False)
-        
-        embed.set_footer(text=f'ID da movimentação: {chest.chest_id}')
+        embed: discord.Embed = _new_embed(interaction=interaction, session=session, chest=chest, mov_type=1)
         
         msg: discord.Message = await interaction.followup.send(embed=embed)
         chest.message_id = msg.id
@@ -110,22 +127,22 @@ def setup_commands(bot:commands.Bot):
     )
     async def retirar(interaction: discord.Interaction, item: str, quantidade: int, observação: str = None):
         await interaction.response.defer()
+        quantidade = abs(quantidade)
         session: Session = NewSession()
-        ThisItem = session.query(Item).filter_by(item_name=item).first()
 
         if not await _is_valid_channel(bot=bot, interaction=interaction, session=session):
             session.close()
             return
 
+        ThisItem = session.query(Item).filter_by(item_name=item).first()
         if not ThisItem or quantidade == 0:
             await interaction.followup.send(f'Item `{item}` não está cadastrado ou quantidade não é válida!')
             session.close()
             return
         
-        StockQty: int = session.query(func.sum(Chest.quantity)).filter_by(item_id=ThisItem.item_id, guild_id=interaction.guild.id).scalar() or 0
-        quantidade = abs(quantidade)
-        if quantidade > StockQty:
-            await interaction.followup.send(f'Item `{item}` está com o estoque zerado ou a quantidade é maior que a do estoque!\n\nEstoque: {StockQty}\nQuantidade escolhida: {abs(quantidade)}')
+        stock_qty: int = session.query(func.sum(Chest.quantity)).filter_by(item_id=ThisItem.item_id, guild_id=interaction.guild.id).scalar() or 0
+        if quantidade > stock_qty:
+            await interaction.followup.send(f'Item `{item}` está com o estoque zerado ou a quantidade é maior que a do estoque!\n\nEstoque: {stock_qty}\nQuantidade escolhida: {abs(quantidade)}')
             session.close()
             return
         
@@ -139,33 +156,13 @@ def setup_commands(bot:commands.Bot):
             created_at=datetime.now(brasilia_tz),
             observations=observação,
         )
+
         session.add(chest)
         session.commit()
         session.refresh(chest)
+        
+        embed: discord.Embed = _new_embed(interaction=interaction, session=session, chest=chest, mov_type=-1)
 
-        Quantity: str = str(quantidade)
-        StockQty: int = session.query(func.sum(Chest.quantity)).filter_by(item_id=ThisItem.item_id, guild_id=interaction.guild.id).scalar()
-        if item == 'Dinheiro':
-            Quantity: str = f'$ {str(quantidade)}'
-            StockQty: str = f'$ {str(StockQty)}'
-        
-        embed: discord.Embed = discord.Embed(
-            title='Retirada do baú',
-            color=discord.Color.dark_red(),
-            timestamp=datetime.now(brasilia_tz)
-        )
-
-        embed.set_author(name=interaction.user.name, icon_url=interaction.user.display_avatar.url)
-        
-        embed.add_field(name='👤 Funcionário', value=f'```\n{user.user_character_name.ljust(embed_width)}\n```', inline=False)
-        embed.add_field(name='📦 Item', value=f'```\n{ThisItem.item_name}\n```', inline=True)
-        embed.add_field(name='🔢 Quantidade', value=f'```\n{Quantity}\n```', inline=True)
-        embed.add_field(name='🏷️ Em estoque', value=f'```\n{StockQty}\n```', inline=True)
-        if observação:
-            embed.add_field(name='📝 Observações', value=f'```\n{'\n'.join(textwrap.wrap(observação, width=embed_width))}\n```', inline=False)
-        
-        embed.set_footer(text=f'ID da movimentação: {chest.chest_id}')
-        
         msg: discord.Message = await interaction.followup.send(embed=embed)
         chest.message_id = msg.id
         chest.channel_id = msg.channel.id
