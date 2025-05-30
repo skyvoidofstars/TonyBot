@@ -14,7 +14,7 @@ def setup_events(bot:discord.ext.commands.Bot):
         message_content: str = (
             f'Bot (re)inicializado às {datetime.now().strftime("%H:%M:%S")}\n'
             f'{len(sincs)} comandos sincronizados\n\n'
-            f'Último commit: `{commit_hash}`.\n\n'
+            f'Último commit: `{commit_hash}`.\n'
             f'## {commit_msg.split('\n', 1)[0]}\n'
             f'{commit_msg.split('\n', 1)[1] if len(commit_msg.split('\n', 1)) > 1 else ""}\n'
             f'{commit_summary}\n'
