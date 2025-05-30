@@ -5,7 +5,7 @@ from db import Chest, Log
 from config import *
 from datetime import datetime
 
-class ConfirmRemoveView(discord.ui.View):
+class ConfirmRemove(discord.ui.View):
     def __init__(self, session:sessionmaker, chest:Chest, interaction:discord.Interaction, bot:commands.Bot):
         super().__init__(timeout=15)
         self.session:sessionmaker = session

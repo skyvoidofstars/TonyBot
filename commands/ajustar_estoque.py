@@ -1,6 +1,6 @@
 import discord
 from config import *
-from db import NewSession, User, Item, Chest
+from db import _new_session, User, Item, Chest
 from sqlalchemy import func
 from discord.ext import commands
 from datetime import datetime
@@ -22,7 +22,7 @@ def setup_commands(bot:commands.Bot):
     @discord.app_commands.checks.has_any_role(*AllowedRoles)
     async def ajustar_estoque(interaction: discord.Interaction, item:str, quantidade:int, tipo_de_ajuste:str = 'Diferença de estoque'):
         await interaction.response.defer()
-        session = NewSession()
+        session = _new_session()
         ThisItem = session.query(Item).filter_by(item_name=item).first()
         user = session.query(User).filter_by(user_id=interaction.user.id).first()
         AdjustmentType = tipo_de_ajuste if tipo_de_ajuste else None
@@ -95,7 +95,7 @@ def setup_commands(bot:commands.Bot):
         
     @ajustar_estoque.autocomplete('item')
     async def autocomplete_item(interaction: discord.Interaction, current: str):
-        session = NewSession()
+        session = _new_session()
         items = session.query(Item.item_name).distinct().order_by(Item.item_name).all()
         session.close()
 

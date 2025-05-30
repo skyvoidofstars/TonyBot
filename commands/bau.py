@@ -1,11 +1,11 @@
 import discord, textwrap
 from discord.ext import commands
 from config import *
-from db import NewSession, User, Chest, Item
+from db import _new_session, User, Chest, Item
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 from datetime import datetime
-from utils.user_manager import get_or_create_user
+from utils.UserManager import get_or_create_user
 
 async def _is_valid_channel(bot: commands.Bot, interaction: discord.Interaction, session: Session) -> bool:
     if interaction.channel.id not in ChestAllowedChannels:
@@ -28,7 +28,7 @@ def setup_commands(bot:commands.Bot):
     )
     async def adicionar(interaction: discord.Interaction, item: str, quantidade: int, observação: str = None):
         await interaction.response.defer()
-        session: Session = NewSession()
+        session: Session = _new_session()
         ThisItem = session.query(Item).filter_by(item_name=item).first()
 
         if not await _is_valid_channel(bot=bot, interaction=interaction, session=session):
@@ -86,7 +86,7 @@ def setup_commands(bot:commands.Bot):
     
     @adicionar.autocomplete('item')
     async def autocomplete_adicionar(interaction: discord.Interaction, current: str):
-        session: Session = NewSession()
+        session: Session = _new_session()
         items: list = (
             session.query(Item.item_name)
             .distinct()
@@ -110,7 +110,7 @@ def setup_commands(bot:commands.Bot):
     )
     async def retirar(interaction: discord.Interaction, item: str, quantidade: int, observação: str = None):
         await interaction.response.defer()
-        session: Session = NewSession()
+        session: Session = _new_session()
         ThisItem = session.query(Item).filter_by(item_name=item).first()
 
         if not await _is_valid_channel(bot=bot, interaction=interaction, session=session):
@@ -174,7 +174,7 @@ def setup_commands(bot:commands.Bot):
     
     @retirar.autocomplete('item')
     async def autocomplete_retirar(interaction: discord.Interaction, current: str):
-        session: Session = NewSession()
+        session: Session = _new_session()
         items: list = (
             session.query(Item.item_name)
             .join(Chest, Chest.item_id == Item.item_id)

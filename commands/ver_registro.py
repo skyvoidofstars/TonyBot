@@ -2,7 +2,7 @@ import discord, textwrap
 from discord.ext import commands
 from config import *
 from sqlalchemy import func
-from db import NewSession, Chest
+from db import _new_session, Chest
 from datetime import datetime
 
 def setup_commands(bot:commands.Bot):
@@ -12,7 +12,7 @@ def setup_commands(bot:commands.Bot):
         id='ID do registro a ser recuperado',
     )
     async def ver_registro(interaction:discord.Interaction, id:int):
-        session = NewSession()
+        session = _new_session()
         
         chest = session.query(Chest).filter_by(chest_id=id).first()
         

@@ -1,14 +1,14 @@
 import discord
 from discord.ext import commands
 from config import *
-from db import NewSession, Chest, Item
+from db import _new_session, Chest, Item
 from sqlalchemy import func
 from datetime import datetime
 
 def setup_commands(bot:commands.Bot):
     @bot.tree.command(name='inventário', description='Mostra o inventário do baú')
     async def inventário(interaction:discord.Interaction):
-        session = NewSession()
+        session = _new_session()
         items = session.query(Item.item_name, Item.group_name, func.sum(Chest.quantity)).join(Item, Chest.item_id == Item.item_id).filter(Chest.guild_id==interaction.guild_id).group_by(Item.item_name).having(func.sum(Chest.quantity) != 0).all()
 
         groups = list(set(item[1] for item in items if item[1]))

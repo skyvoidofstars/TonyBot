@@ -1,7 +1,7 @@
 import discord
 from config import *
 from datetime import datetime
-from utils.commit_info import get_latest_commit_info
+from utils.CommitInfo import get_latest_commit_info
 
 def setup_events(bot:discord.ext.commands.Bot):
     @bot.event

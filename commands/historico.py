@@ -1,7 +1,7 @@
 import discord, re
 from discord.ext import commands
 from config import *
-from db import NewSession, User, Chest, Item
+from db import _new_session, User, Chest, Item
 from datetime import datetime
 
 
@@ -17,7 +17,7 @@ def setup_commands(bot:commands.Bot):
         if usuário is None:
             usuário = interaction.user
 
-        session = NewSession()
+        session = _new_session()
 
         movements = (
             session.query(
@@ -63,7 +63,7 @@ def setup_commands(bot:commands.Bot):
     )
     async def item(interaction:discord.Interaction, item:str, movimentações:int = 10):
 
-        session = NewSession()
+        session = _new_session()
         item = session.query(Item).filter(Item.item_name == item).first()
 
         if not item:
@@ -110,7 +110,7 @@ def setup_commands(bot:commands.Bot):
         
     @item.autocomplete('item')
     async def autocomplete_item(interaction: discord.Interaction, current: str):
-        session = NewSession()
+        session = _new_session()
         items = session.query(Item.item_name).distinct().order_by(Item.item_name).all()
         session.close()
 
@@ -123,7 +123,7 @@ def setup_commands(bot:commands.Bot):
     
     @history.command(name='ajustes', description='Mostra o histórico de movimentações do baú por item')
     async def ajustes(interaction:discord.Interaction):
-        session = NewSession()            
+        session = _new_session()            
         movements = (
             session.query(
                 Chest.chest_id,

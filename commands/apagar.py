@@ -1,6 +1,6 @@
 import discord
 from discord.ext import commands
-from db import NewSession, Log
+from db import _new_session, Log
 from datetime import datetime
 from config import *
 
@@ -18,7 +18,7 @@ def setup_commands(bot: commands.Bot):
                     description=f'Mensagem apagada: {message.id} usado por {ctx.author.name}:\n{message.author.name}: "{message.content}"',
                     timestamp = datetime.now(brasilia_tz)
                 )
-                session = NewSession()
+                session = _new_session()
                 session.add(log)
                 session.commit()
                 session.close()

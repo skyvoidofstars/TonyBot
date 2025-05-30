@@ -3,9 +3,9 @@ from discord.ext import commands
 from config import *
 from sqlalchemy import func
 from sqlalchemy.orm import Session
-from db import NewSession, User, Item
+from db import _new_session, User, Item
 from datetime import datetime
-from utils.user_manager import get_or_create_user
+from utils.UserManager import get_or_create_user
 
 def setup_commands(bot:commands.Bot):
     @bot.tree.command(name='registrar_item', description='Registra um item no sistema')
@@ -17,7 +17,7 @@ def setup_commands(bot:commands.Bot):
     )
     async def registrar_item(interaction:discord.Interaction, item:str, categoria:str, descrição:str = None):
         await interaction.response.defer()
-        session: Session = NewSession()
+        session: Session = _new_session()
         
         user: User = get_or_create_user(session=session, discord_user=interaction.user)
         
@@ -58,7 +58,7 @@ def setup_commands(bot:commands.Bot):
         
     @registrar_item.autocomplete('categoria')
     async def autocomplete_categoria(interaction: discord.Interaction, current: str):
-        session: Session = NewSession()
+        session: Session = _new_session()
         categorias: Item = session.query(Item.group_name).distinct().order_by(Item.group_name).all()
         session.close()
 
