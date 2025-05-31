@@ -1,8 +1,8 @@
 import discord
 from discord.ext import commands
-from config import *
+from config import LogChannel, MentionID
 
-def setup_events(bot:commands.Bot):
+def setup_events(bot: commands.Bot):
     @bot.tree.error
     async def on_app_command_error(interaction: discord.Interaction, error):
         actual_error = getattr(error, 'original', error)
@@ -14,4 +14,4 @@ def setup_events(bot:commands.Bot):
         else:
             await bot.get_guild(interaction.guild_id).get_channel(interaction.channel_id).send(f'{interaction.user.mention} Erro ao executar o comando {interaction.command.name}!')
             log_error = actual_error if actual_error is not error else error
-            await bot.get_guild(LogGuild).get_channel(LogChannel).send(f'<@{MentionID}>\nErro no comando {interaction.command.name} por {interaction.user.name}:\n{log_error}')
+            await bot.get_guild(interaction.guild.id).get_channel(LogChannel).send(f'<@{MentionID}>\nErro no comando {interaction.command.name} por {interaction.user.name}:\n{log_error}')

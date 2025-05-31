@@ -1,16 +1,23 @@
 import discord
+from discord.ext import commands
 from config import *
 from datetime import datetime
 from utils.CommitInfo import get_latest_commit_info
+from views.apreensao.NewSeizure import NewSeizureView
+from views.apreensao.SeizureCancel import SeizureCancelView
 
-def setup_events(bot:discord.ext.commands.Bot):
+def setup_events(bot: commands.Bot):
     @bot.event
     async def on_ready():
+        
+        bot.add_view(NewSeizureView(bot=bot))
+        bot.add_view(SeizureCancelView(bot=bot))
+        
         sincs = await bot.tree.sync()
-        commit_hash, commit_msg, commit_author, commit_summary = get_latest_commit_info()
         print(f'{datetime.now().strftime("%Y-%m-%d %H:%M:%S")} {len(sincs)} comandos sincronizados')
         print(f'{datetime.now().strftime("%Y-%m-%d %H:%M:%S")} Bot conectado como {bot.user}')
         
+        commit_hash, commit_msg, commit_author, commit_summary = get_latest_commit_info()
         message_content: str = (
             f'Bot (re)inicializado às {datetime.now().strftime("%H:%M:%S")}\n'
             f'{len(sincs)} comandos sincronizados\n\n'
@@ -20,5 +27,5 @@ def setup_events(bot:discord.ext.commands.Bot):
             f'{commit_summary}\n'
             f'||<@{MentionID}>||'
         )
-        
-        await bot.get_guild(LogGuild).get_channel(LogChannel).send(message_content)
+        for guild in bot.guilds:
+            await bot.get_guild(guild.id).get_channel(LogChannel).send(message_content)

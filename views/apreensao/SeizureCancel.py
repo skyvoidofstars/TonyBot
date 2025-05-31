@@ -1,0 +1,59 @@
+import discord, regex
+from discord import ui
+from discord.ext import commands
+from sqlalchemy.orm import Session
+from  datetime import datetime
+from db import Seizure, Log, _new_session
+from config import AllowedRoles, brasilia_tz
+
+def _is_user_allowed(user: discord.User, seizure: Seizure) -> bool:
+    if user.id != seizure.user_id and not any(role.id in AllowedRoles for role in user.roles):
+        return False
+    return True
+
+# def _get_seizure_id(interaction: discord.Interaction):
+#     _embed = interaction.message.embeds[0]
+#     _embed_footer: str = _embed.footer.text
+    # _seizure_id: int = int(regex.search(pattern=r'([\d]+)', string=_embed_footer).group(0))
+    # return _seizure_id
+    
+class SeizureCancelView(ui.View):
+    def __init__(self, bot: commands.Bot):
+        super().__init__(timeout=None)
+        self.bot: commands.Bot = bot
+        self.custom_id: str = 'seizure_cancel_persistent_view'
+    
+    @ui.button(label='Cancelar', style=discord.ButtonStyle.danger, custom_id='cancel_seizure_button')
+    async def cancel_seizure_button_callback(self, interaction: discord.Interaction, button: ui.Button):
+        session: Session = _new_session()
+        seizure: Seizure | None = session.query(Seizure).filter_by(message_id=interaction.message.id).first()
+
+        if not _is_user_allowed(user=interaction.user, seizure=seizure): 
+            await interaction.response.send_message('Você não tem permissão para cancelar esta apreensão.', ephemeral=True)
+            session.close()
+            return
+        
+        seizure.status = 'CANCELADO'        
+        session.add(seizure)
+        session.commit()
+
+        log = Log(
+            guild=interaction.guild_id, 
+            user_id=interaction.user.id,
+            description=f'Apreensão ID {seizure.seizure_id} (Oficial: {seizure.officer_name} #{seizure.officer_badge}) de {seizure.user.user_character_name} foi CANCELADA por {interaction.user.name}.',
+            timestamp=datetime.now(brasilia_tz)
+        )
+        session.add(log)
+        session.commit()
+        session.close()
+        
+        for item in self.children:
+            if isinstance(item, ui.Button):
+                item.disabled = True
+                
+        original_embed = interaction.message.embeds[0] 
+        original_embed.color = discord.Color.dark_red() 
+        original_embed.title = f'{original_embed.title} [CANCELADA]'
+        await interaction.response.edit_message(content=f'Apreensão cancelada por {interaction.user.mention}.', embed=original_embed, view=None)
+        
+        self.stop()

@@ -1,18 +1,18 @@
 import discord
 from discord.ext import commands
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import Session
 from db import Chest, Log
 from config import *
 from datetime import datetime
 
 class ConfirmRemove(discord.ui.View):
-    def __init__(self, session:sessionmaker, chest:Chest, interaction:discord.Interaction, bot:commands.Bot):
+    def __init__(self, bot:commands.Bot, session: Session, interaction:discord.Interaction, chest:Chest):
         super().__init__(timeout=15)
-        self.session:sessionmaker = session
-        self.chest:Chest = chest
-        self.user:discord.User = interaction.user
-        self.interaction:discord.Interaction = interaction
-        self.bot:commands.Bot = bot
+        self.bot: commands.Bot = bot
+        self.session: Session = session
+        self.interaction: discord.Interaction = interaction
+        self.chest: Chest = chest
+        self.user: discord.User = interaction.user
     @discord.ui.button(label="Cancelar", style=discord.ButtonStyle.danger)
     async def cancel(self, interaction: discord.Interaction, button: discord.ui.Button):
         if interaction.user != self.user:
@@ -46,11 +46,11 @@ class ConfirmRemove(discord.ui.View):
             self.session.add(log)
             self.session.commit()
             
-            await self.bot.get_guild(LogGuild).get_channel(LogChannel).send(content=f'{self.user.mention} removeu o registro de {self.chest.user.user_character_name} de {self.chest.quantity} un. de {self.chest.item.item_name}.{' Observação da transação: ' + self.chest.observations if self.chest.observations else ''}\nID da transação removida: {self.chest.chest_id}')
+            await self.bot.get_guild(interaction.guild.id).get_channel(LogChannel).send(content=f'{self.user.mention} removeu o registro de {self.chest.user.user_character_name} de {self.chest.quantity} un. de {self.chest.item.item_name}.{' Observação da transação: ' + self.chest.observations if self.chest.observations else ''}\nID da transação removida: {self.chest.chest_id}')
             
         except Exception as e:
             await interaction.response.send_message(f"Erro ao remover registro: {e}", ephemeral=True)
-            await self.bot.get_guild(LogGuild).get_channel(LogChannel).send(f'<@{MentionID}>\nErro no comando remover_registro (botões) por {interaction.user.name}:\n{e}')
+            await self.bot.get_guild(interaction.guild.id).get_channel(LogChannel).send(f'<@{MentionID}>\nErro no comando remover_registro (botões) por {interaction.user.name}:\n{e}')
         finally:
             self.session.close()
             self.stop()

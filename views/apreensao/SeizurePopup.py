@@ -4,7 +4,7 @@ from discord.ext import commands
 from sqlalchemy.orm import Session
 from datetime import datetime
 from config import brasilia_tz
-from db import User, Seizure, Log
+from db import User, Seizure, _new_session
 from utils.UserManager import get_or_create_user
 from utils.ErrorReporting import log_and_notify
 
@@ -21,7 +21,7 @@ class SeizureView(ui.Modal, title='🚗 Nova apreensão'):
         max_length=60
     )
     officer_badge: ui.TextInput = ui.TextInput(
-        label='🟨 Nº do distintivo',
+        label='⭐ Nº do distintivo',
         placeholder='012',
         required=True,
         style=discord.TextStyle.short,
@@ -35,23 +35,23 @@ class SeizureView(ui.Modal, title='🚗 Nova apreensão'):
         max_length=1000
     )
 
-    def __init__(self, bot: commands.Bot, interaction: discord.Interaction, session: Session):
+    def __init__(self, bot: commands.Bot):
         super().__init__(timeout=None)
 
         self.bot = bot
-        self.interaction = interaction
-        self.session = session
 
     async def on_submit(self, interaction: discord.Interaction):
         _officer_name: str = _regex_extraction(pattern=r'([\p{L}\s]+[\p{L}])', value=self.officer_name.value).title()
-        _officer_badge: str = _regex_extraction(pattern=r'[0-9]+', value=self.officer_badge.value)
+        _officer_badge: str = _regex_extraction(pattern=r'[0-9]+', value=self.officer_badge.value).rjust(3, '0')
         _observations: str = self.observations.value
 
         if not _officer_name or not _officer_badge:
             await interaction.response.send_message(content='Nome do oficial ou distintivo inválidos', ephemeral=True, delete_after=15)
             return
 
-        _user: User = get_or_create_user(session=self.session, discord_user=interaction.user)
+        session: Session = _new_session()
+        
+        _user: User = get_or_create_user(session=session, discord_user=interaction.user)
 
         seizure: Seizure = Seizure(
             user_id = _user.user_id,
@@ -63,9 +63,12 @@ class SeizureView(ui.Modal, title='🚗 Nova apreensão'):
             status = 'PENDENTE'
         )
 
-        self.session.add(seizure)
-        self.session.commit()
-        self.session.close()
+        session.add(seizure)
+        session.commit()
+        session.close()
 
+        await interaction.response.send_message(content=f'{interaction.user.mention} para concluir, envie nesse chat a imagem da apeensão!', ephemeral=True)
+        
     async def on_error(self, interaction: discord.Interaction, error: Exception):
-        await log_and_notify(bot=self.bot, interaction=interaction, session=self.session, text=error)
+        session: Session = _new_session()
+        await log_and_notify(bot=self.bot, interaction=interaction, session=session, text=error)

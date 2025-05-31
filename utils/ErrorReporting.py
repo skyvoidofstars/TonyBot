@@ -2,7 +2,7 @@ import discord
 from discord.ext import commands
 from sqlalchemy.orm import Session
 from db import User, Log
-from config import LogGuild, LogChannel, MentionID
+from config import LogChannel, MentionID
 from utils.UserManager import get_or_create_user
 
 async def log_and_notify(bot: commands.Bot, interaction: discord.Interaction, session: Session, text: str, severity: int = 0) -> None:
@@ -12,7 +12,7 @@ async def log_and_notify(bot: commands.Bot, interaction: discord.Interaction, se
 
     await bot.get_guild(_guild_id).get_channel(_channel_id).send(f'{interaction.user.mention} Erro ao executar o comando {interaction.command.name}!\n\n{text}')
 
-    await bot.get_guild(LogGuild).get_channel(LogChannel).send(f'<@{MentionID}>\nErro no comando {interaction.command.name} por {interaction.user.name}:\n{text}')
+    await bot.get_guild(interaction.guild.id).get_channel(LogChannel).send(f'<@{MentionID}>\nErro no comando {interaction.command.name} por {interaction.user.name}:\n{text}')
 
     _log: Log = Log(
         guild=_guild_id,

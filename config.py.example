@@ -20,7 +20,10 @@ ChestAllowedChannels = [
 ]
 
 # Discord server id and channel id for bot logs
-LogGuild, LogChannel = 000000000000000000, 000000000000000000
+LogChannel = 000000000000000000
+
+# Seizure Channel
+SeizureChannel = 1378205246635118602
 
 # ID to be mentioned in errors or initializations
 # 000000000000000000 to user or '&000000000000000000' to roles
