@@ -3,6 +3,7 @@ from discord.ext import commands
 from config import *
 from datetime import datetime
 from utils.CommitInfo import get_latest_commit_info
+from utils.PersistantViewManager import update_new_seizure_message
 from views.apreensao.NewSeizure import NewSeizureView
 from views.apreensao.SeizureCancel import SeizureCancelView
 
@@ -10,6 +11,8 @@ def setup_events(bot: commands.Bot):
     @bot.event
     async def on_ready():
         
+        await update_new_seizure_message(bot=bot)
+
         bot.add_view(NewSeizureView(bot=bot))
         bot.add_view(SeizureCancelView(bot=bot))
         

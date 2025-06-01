@@ -5,7 +5,30 @@ from datetime import datetime
 from db import Seizure
 from config import brasilia_tz, embed_width, seizure_channel_id, aux_db_channel
 from utils.ImageManager import get_image_url_from_message
+from utils.PersistantViewManager import update_new_seizure_message
 from views.apreensao.SeizureCancel import SeizureCancelView
+
+def _deleve_invalid_entries(session: Session, user_id: int, seizure_id: int):
+    try:
+        _invalid_entries: Seizure = (
+            session.query(Seizure)
+            .filter(
+                Seizure.seizure_id != seizure_id,
+                Seizure.status == 'PENDENTE',
+                Seizure.user_id == user_id
+            )
+        )
+        
+        if _invalid_entries:
+            for entry in _invalid_entries:
+                session.delete(entry)
+        session.commit()
+        
+    except Exception as e:
+        print(f"Erro ao deletar entradas inválidas: {e}")
+        session.rollback()
+    finally:
+        session.close()
 
 async def _save_image_to_aux_db(bot:commands.Bot, message: discord.Message) -> discord.Message:
     _original_file: discord.Attachment = message.attachments[0]
@@ -43,8 +66,10 @@ def _create_embed(seizure: Seizure, message: discord.Message) -> discord.Embed:
     _embed.add_field(name='👤 Funcionário', value=f'```\n{_employee}\n```', inline=False)
     _embed.add_field(name='👮 Oficial', value=f'```\n{_officer_name}\n```', inline=True)
     _embed.add_field(name='⭐ Distintivo', value=f'```\n{_officer_badge}\n```', inline=True)
+    
     if _observations:
         _embed.add_field(name='📝 Observações', value=f'```\n{'\n'.join(textwrap.wrap(_observations, width=embed_width))}\n```', inline=False)
+    
     _embed.add_field(name='📷 Imagem da apreensão', value=f'[Ver imagem no tamanho original]({_image_url})', inline=False)
     
     _embed.set_image(url=_image_url)
@@ -54,6 +79,8 @@ def _create_embed(seizure: Seizure, message: discord.Message) -> discord.Embed:
     return _embed
 
 async def finish_seizure(bot: commands.Bot, session: Session, seizure: Seizure, original_message: discord.Message) -> None:
+    
+    _deleve_invalid_entries(session=session, user_id=seizure.user_id, seizure_id=seizure.seizure_id)
     
     new_message: discord.Message = await _save_image_to_aux_db(bot=bot, message=original_message)
     image_url: str = get_image_url_from_message(new_message)
@@ -74,3 +101,7 @@ async def finish_seizure(bot: commands.Bot, session: Session, seizure: Seizure, 
     session.close()
     
     await original_message.delete()
+    try:
+        await update_new_seizure_message(bot=bot)
+    except Exception as e:
+        print(f"Erro ao chamar update_new_seizure_message em finish_seizure: {e}")

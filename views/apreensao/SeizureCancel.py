@@ -2,20 +2,14 @@ import discord, regex
 from discord import ui
 from discord.ext import commands
 from sqlalchemy.orm import Session
-from  datetime import datetime
+from datetime import datetime
 from db import Seizure, Log, _new_session
-from config import AllowedRoles, brasilia_tz
+from config import AllowedRoles, brasilia_tz, LogChannel
 
 def _is_user_allowed(user: discord.User, seizure: Seizure) -> bool:
     if user.id != seizure.user_id and not any(role.id in AllowedRoles for role in user.roles):
         return False
     return True
-
-# def _get_seizure_id(interaction: discord.Interaction):
-#     _embed = interaction.message.embeds[0]
-#     _embed_footer: str = _embed.footer.text
-    # _seizure_id: int = int(regex.search(pattern=r'([\d]+)', string=_embed_footer).group(0))
-    # return _seizure_id
     
 class SeizureCancelView(ui.View):
     def __init__(self, bot: commands.Bot):
@@ -45,6 +39,10 @@ class SeizureCancelView(ui.View):
         )
         session.add(log)
         session.commit()
+        session.refresh(log)
+        
+        await self.bot.get_guild(int(log.guild)).get_channel(LogChannel).send(content=log.description)
+        
         session.close()
         
         for item in self.children:
@@ -54,6 +52,6 @@ class SeizureCancelView(ui.View):
         original_embed = interaction.message.embeds[0] 
         original_embed.color = discord.Color.dark_red() 
         original_embed.title = f'{original_embed.title} [CANCELADA]'
-        await interaction.response.edit_message(content=f'Apreensão cancelada por {interaction.user.mention}.', embed=original_embed, view=None)
+        await interaction.response.edit_message(content=f'Apreensão cancelada por {interaction.user.mention} em {datetime.now(brasilia_tz).strftime('%d/%m/%Y às %H:%M:%S')}.', embed=original_embed, view=None)
         
         self.stop()

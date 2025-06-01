@@ -23,7 +23,7 @@ class ConfirmRemove(discord.ui.View):
         self.session.close()
         self.stop()
 
-    @discord.ui.button(label="Remover registro", style=discord.ButtonStyle.green)
+    @discord.ui.button(label="Remover registro", style=discord.ButtonStyle.success)
     async def confirm(self, interaction: discord.Interaction, button: discord.ui.Button):
         try:
             if interaction.user != self.user:

@@ -46,7 +46,7 @@ class SeizureView(ui.Modal, title='🚗 Nova apreensão'):
         _observations: str = self.observations.value
 
         if not _officer_name or not _officer_badge:
-            await interaction.response.send_message(content='Nome do oficial ou distintivo inválidos', ephemeral=True, delete_after=15)
+            await interaction.response.send_message(content='Nome do oficial ou distintivo inválidos', ephemeral=True, delete_after=30)
             return
 
         session: Session = _new_session()
@@ -67,8 +67,8 @@ class SeizureView(ui.Modal, title='🚗 Nova apreensão'):
         session.commit()
         session.close()
 
-        await interaction.response.send_message(content=f'{interaction.user.mention} para concluir, envie nesse chat a imagem da apeensão!', ephemeral=True)
+        await interaction.response.send_message(content=f'{interaction.user.mention} para concluir, envie nesse chat a imagem da apreensão!', ephemeral=True, delete_after=30)
         
     async def on_error(self, interaction: discord.Interaction, error: Exception):
         session: Session = _new_session()
-        await log_and_notify(bot=self.bot, interaction=interaction, session=session, text=error)
+        await log_and_notify(bot=self.bot, interaction=interaction, text=error)

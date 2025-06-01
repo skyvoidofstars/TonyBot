@@ -62,7 +62,7 @@ class Seizure(Base):
 
     user = Relationship('User', foreign_keys=[user_id], backref='SEIZURE', lazy='subquery')
 
-class SeizureRefunds(Base):
+class SeizureRefund(Base):
     __tablename__ = 'SEIZURE_REFUNDS'
     
     refund_id = Column(Integer, primary_key=True, autoincrement=True, nullable=False)
@@ -74,6 +74,13 @@ class SeizureRefunds(Base):
     
     user = Relationship('User', foreign_keys=[created_by], backref='SEIZURE_REFUNDS', lazy='subquery')    
 
+class PersistentMessage(Base):
+    __tablename__ = 'PERSISTENT_MESSAGES'
+
+    view_key = Column(String, primary_key=True, nullable=False)
+    message_id = Column(Integer, nullable=True)
+    channel_id = Column(Integer, nullable=True)
+    
 class Log(Base):
     __tablename__ = 'LOGS'
     
