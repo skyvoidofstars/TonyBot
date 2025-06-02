@@ -1,6 +1,6 @@
 import discord, textwrap, io
 from discord.ext import commands
-from sqlalchemy import func, case
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 from datetime import datetime
 from db import User, Seizure, SeizureRefund, _new_session
@@ -121,7 +121,21 @@ def _get_refund_information(refund_id: int) -> str:
         .order_by(User.user_character_name)
         .all()
     )
-    
+
+    _refund_values: list[tuple[int, int]] = (
+        _session.query(SeizureRefund.total_value, func.coalesce(SeizureRefund.redeemed_value, 0))
+        .filter(SeizureRefund.refund_id == refund_id)
+        .first()
+    )
+
+    _total_value_int: int = _refund_values[0]
+    _total_value: str = f'$ {_total_value_int:,}'.replace(',', '.')
+    _redeemed_value_int: int = _refund_values[1]
+    _redeemed_value: str = f'$ {_redeemed_value_int:,}'.replace(',', '.')
+    _remaining_value_int: int = _total_value_int - _redeemed_value_int
+    _remaining_value: str = f'$ {_remaining_value_int:,}'.replace(',', '.')
+
+
     _session.close()
     
     _refund_information: str = f'# {'Nome do funcionário'.center(29, ' ')} {'Valor'.center(10, ' ')}  Data e hora da retirada\n'
@@ -142,9 +156,15 @@ def _get_refund_information(refund_id: int) -> str:
         _formatted_value: str = f'{_value:,}'.replace(',','.')
         _refund_information += f'{_prefix} {_emoji} {_user.ljust(25)[:25]} | $ {_formatted_value.rjust(6)} | {_date_if_redeemed}\n'
 
+    _refund_information += (
+        f'\n'
+        f'Valor total: {_total_value}\n'
+        f'Valor resgatado: {_redeemed_value} {f'(restam {_remaining_value})' if _remaining_value_int > 0 else ''}\n'
+    )
+
     _refund_information = _refund_information.strip()
     
-    return _refund_information   
+    return _refund_information
 
 def _get_pendent_users_mention(refund_id: int) -> str:
     
@@ -158,11 +178,11 @@ def _get_pendent_users_mention(refund_id: int) -> str:
         .all()
     )
 
-    _mentions = ''
+    _mentions = ' '
     for _user in seizure_user_ids_list:
         _mentions += f'<@{_user[0]}> '
         
-    return _mentions.strip()
+    return _mentions
         
 def new_refund_message_content(upper_limit_date: datetime, refund_id: int):
     
@@ -187,7 +207,7 @@ def new_refund_message_content(upper_limit_date: datetime, refund_id: int):
             f'## Período: {lower_limit_date} à {upper_limit_date}\n\n'
             f'```diff\n{refund_info}\n```\n'
             f'Reembolsos gerados por <@{_user_id}> sob o ID {refund_id}\n\n'
-            f'||{mention_users}||\n\n   '
+            f'||{mention_users}||\n\n'
             f'Para confirmar a retirada do valor do baú, clique no botão abaixo'
         )
     

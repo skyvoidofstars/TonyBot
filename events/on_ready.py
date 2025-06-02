@@ -8,12 +8,12 @@ from utils.CommitInfo import get_latest_commit_info
 from utils.PersistantViewManager import update_new_seizure_message
 from views.apreensao.NewSeizure import NewSeizureView
 from views.apreensao.SeizureCancel import SeizureCancelView
-from views.apreensao.ConfirmRefund import ConfirmRefundView
+from views.apreensao.RefundButtons import RefundButtonsView
 
 def _add_views(bot: commands.Bot):
     bot.add_view(NewSeizureView(bot=bot))
     bot.add_view(SeizureCancelView(bot=bot))
-    bot.add_view(ConfirmRefundView(bot=bot))
+    bot.add_view(RefundButtonsView(bot=bot))
 
 def setup_events(bot: commands.Bot):
     @bot.event

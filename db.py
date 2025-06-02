@@ -72,6 +72,8 @@ class SeizureRefund(Base):
     status = Column(String(50), nullable=False, default='PENDENTE') # EM ANDAMENTO, FINALIZADO
     created_by = Column(Integer, ForeignKey('USERS.user_id'), nullable=False)
     created_at = Column(DateTime, nullable=False)
+    finished_by = Column(Integer, ForeignKey('USERS.user_id'), nullable=True)
+    finished_at = Column(DateTime, nullable=True)
     
     user = Relationship('User', foreign_keys=[created_by], backref='SEIZURE_REFUNDS', lazy='subquery')    
 

@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 from utils.ErrorReporting import log_and_notify
 from utils.UserManager import get_or_create_user
 from views.apreensao.functions import new_refund_message_content
-from views.apreensao.ConfirmRefund import ConfirmRefundView
+from views.apreensao.RefundButtons import RefundButtonsView
 from config import seizure_channel_id, refund_channel_id, seizure_value, brasilia_tz
 
 def _update_seizure_status(status: str, refund_id: int, limit_date: datetime):
@@ -95,7 +95,7 @@ class ApproveRefundView(ui.View):
 
         refund_message = await refund_channel.send(
             content=message_content,
-            view=ConfirmRefundView(bot=self.bot)
+            view=RefundButtonsView(bot=self.bot)
         )
         
         new_refund.message_id = refund_message.id
