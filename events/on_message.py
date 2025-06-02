@@ -21,7 +21,7 @@ def setup_events(bot: commands.Bot):
                 image_url = get_image_url_from_message(message=message)
                 if image_url:
                     session: Session = _new_session()
-                    user: User = get_or_create_user(session=session, discord_user=message.author)
+                    user: User = get_or_create_user(discord_user=message.author)
                     seizure: Seizure | None = session.query(Seizure).filter_by(user_id=user.user_id, status='PENDENTE').order_by(desc(Seizure.created_at)).first()
                     if seizure:
                         await finish_seizure(bot=bot, session=session, seizure=seizure, original_message=message)

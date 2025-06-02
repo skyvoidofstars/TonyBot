@@ -61,21 +61,19 @@ def setup_commands(bot: commands.Bot):
             f'Período ({dates_interval})\n'
             f'{'Nome'.ljust(50)} | Valor total\n\n'
         )
-        total_value: int = 0
-        for row in seizure_list:
-            character: str = row[0]
-            _value: int = row[1]
-            total_value += _value
+        _total_value: int = 0
+        for _character, _value in seizure_list:
+            _total_value += _value
             value = f'{_value:,}'.replace(',','.')
             
-            output += f'{character.ljust(50)} | $ {value.rjust(6)}\n'
+            output += f'{_character.ljust(50)} | $ {value.rjust(6)}\n'
         
-        total_value = f'{total_value:,}'.replace(',','.')
+        total_value: str = f'{_total_value:,}'.replace(',','.')
         
         output += f'\nValor total: $ {total_value}'
         output = (
             f'```\n{output}```\n'
-            f'Clique no botão abaixo para confirmar e publicar os reembolsos'
+            f'### Clique no botão abaixo para confirmar e publicar os reembolsos'
             )
         
         await interaction.response.send_message(content=output)

@@ -41,7 +41,7 @@ def setup_commands(bot:commands.Bot):
             return
         
         quantidade = abs(quantidade)
-        user: User = get_or_create_user(session=session, discord_user=interaction.user)
+        user: User = get_or_create_user(discord_user=interaction.user)
 
         chest: Chest = Chest(
             user_id=user.user_id,
@@ -129,7 +129,7 @@ def setup_commands(bot:commands.Bot):
             session.close()
             return
         
-        user: User = get_or_create_user(session=session, discord_user=interaction.user)
+        user: User = get_or_create_user(discord_user=interaction.user)
 
         chest: Chest = Chest(
             user_id=user.user_id,

@@ -51,7 +51,7 @@ class SeizureView(ui.Modal, title='🚗 Nova apreensão'):
 
         session: Session = _new_session()
         
-        _user: User = get_or_create_user(session=session, discord_user=interaction.user)
+        _user: User = get_or_create_user(discord_user=interaction.user)
 
         seizure: Seizure = Seizure(
             user_id = _user.user_id,
@@ -67,7 +67,7 @@ class SeizureView(ui.Modal, title='🚗 Nova apreensão'):
         session.commit()
         session.close()
 
-        await interaction.response.send_message(content=f'{interaction.user.mention} para concluir, envie nesse chat a imagem da apreensão!', ephemeral=True, delete_after=30)
+        await interaction.response.send_message(content=f'{interaction.user.mention} para concluir, envie nesse chat a imagem da apreensão!', ephemeral=True, delete_after=10)
         
     async def on_error(self, interaction: discord.Interaction, error: Exception):
         session: Session = _new_session()

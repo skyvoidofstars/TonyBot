@@ -1,7 +1,7 @@
 import discord, regex
 from sqlalchemy.orm import Session
 from datetime import datetime
-from db import User
+from db import User, _new_session
 from config import brasilia_tz
 
 def _extract_character_name(display_name: str) -> str:
@@ -10,7 +10,8 @@ def _extract_character_name(display_name: str) -> str:
         return match.group(1)
     return display_name.split('|')[0].strip()
 
-def get_or_create_user(session: Session, discord_user: discord.User) -> User:
+def get_or_create_user(discord_user: discord.User) -> User:
+    session = _new_session()
     user: User = session.query(User).filter_by(user_id=discord_user.id).first()
 
     if not user:
@@ -26,5 +27,6 @@ def get_or_create_user(session: Session, discord_user: discord.User) -> User:
         session.add(user)
         session.commit()
         session.refresh(user)
+        session.close()
 
     return user

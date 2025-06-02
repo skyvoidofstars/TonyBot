@@ -53,22 +53,23 @@ class Seizure(Base):
     officer_badge = Column(String(10), nullable=False)
     image_url = Column(String(2048), nullable=True)
     observations = Column(String(1000), nullable=True)
-    status = Column(String(50), nullable=False, default='PENDENTE') # PENDENTE, CRIADO, REEMBOLSADO, CANCELADO    
+    status = Column(String(50), nullable=False, default='PENDENTE') # PENDENTE, CRIADO, REEMBOLSADO, RESGATADO, CANCELADO    
     created_at = Column(DateTime, nullable=False)
     message_id = Column(Integer, nullable=True)
-    refunded_at = Column(DateTime, nullable=True)
-    refunded_by = Column(Integer, ForeignKey('USERS.user_id'), nullable=True)
+    refund_id = Column(Integer, ForeignKey('SEIZURE_REFUNDS.refund_id'), nullable=True)
     redeemed_at = Column(DateTime, nullable=True)
 
     user = Relationship('User', foreign_keys=[user_id], backref='SEIZURE', lazy='subquery')
+    refund = Relationship('SeizureRefund', foreign_keys=[refund_id], backref='SEIZURE', lazy='subquery')
 
 class SeizureRefund(Base):
     __tablename__ = 'SEIZURE_REFUNDS'
     
     refund_id = Column(Integer, primary_key=True, autoincrement=True, nullable=False)
     total_value = Column(Integer, nullable=False)
-    redeemed_value = Column(Integer, nullable=False)
+    redeemed_value = Column(Integer, nullable=True)
     message_id = Column(Integer, nullable=True)
+    status = Column(String(50), nullable=False, default='PENDENTE') # EM ANDAMENTO, FINALIZADO
     created_by = Column(Integer, ForeignKey('USERS.user_id'), nullable=False)
     created_at = Column(DateTime, nullable=False)
     

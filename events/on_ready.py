@@ -2,23 +2,32 @@ import discord
 from discord.ext import commands
 from config import *
 from datetime import datetime
+from sqlalchemy.orm import Session
+from db import SeizureRefund, _new_session
 from utils.CommitInfo import get_latest_commit_info
 from utils.PersistantViewManager import update_new_seizure_message
 from views.apreensao.NewSeizure import NewSeizureView
 from views.apreensao.SeizureCancel import SeizureCancelView
+from views.apreensao.ConfirmRefund import ConfirmRefundView
+
+def _add_views(bot: commands.Bot):
+    bot.add_view(NewSeizureView(bot=bot))
+    bot.add_view(SeizureCancelView(bot=bot))
+    bot.add_view(ConfirmRefundView(bot=bot))
 
 def setup_events(bot: commands.Bot):
     @bot.event
     async def on_ready():
         
         await update_new_seizure_message(bot=bot)
-
-        bot.add_view(NewSeizureView(bot=bot))
-        bot.add_view(SeizureCancelView(bot=bot))
+        
+        _add_views(bot=bot)
         
         sincs = await bot.tree.sync()
-        print(f'{datetime.now().strftime("%Y-%m-%d %H:%M:%S")} {len(sincs)} comandos sincronizados')
-        print(f'{datetime.now().strftime("%Y-%m-%d %H:%M:%S")} Bot conectado como {bot.user}')
+        print(
+            f'{datetime.now().strftime("%Y-%m-%d %H:%M:%S")} {len(sincs)} comandos sincronizados\n'
+            f'{datetime.now().strftime("%Y-%m-%d %H:%M:%S")} Bot conectado como {bot.user} em {len(bot.guilds)} servidor{'es' if len(bot.guilds) > 1 else ''}!'
+        )
         
         commit_hash, commit_msg, commit_author, commit_summary = get_latest_commit_info()
         message_content: str = (
