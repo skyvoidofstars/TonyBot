@@ -205,10 +205,10 @@ def new_refund_message_content(upper_limit_date: datetime, refund_id: int):
     
     message_content: str = (
             f'## Período: {lower_limit_date} à {upper_limit_date}\n\n'
-            f'```diff\n{refund_info}\n```\n'
-            f'Reembolsos gerados por <@{_user_id}> sob o ID {refund_id}\n\n'
+            f'```diff\n{refund_info}\n```\n\n'
             f'||{mention_users}||\n\n'
-            f'Para confirmar a retirada do valor do baú, clique no botão abaixo'
+            f'Para confirmar a retirada do valor do baú, clique no botão abaixo\n\n'
+            f'-# Reembolsos gerados por <@{_user_id}> sob o ID {refund_id}'
         )
     
     return message_content
