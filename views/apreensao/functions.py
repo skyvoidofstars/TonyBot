@@ -1,4 +1,5 @@
 import discord, textwrap, io
+from PIL import Image, ImageFile
 from discord.ext import commands
 from sqlalchemy import func
 from sqlalchemy.orm import Session
@@ -32,10 +33,40 @@ def _deleve_invalid_entries(session: Session, user_id: int, seizure_id: int):
     finally:
         session.close()
 
+def _crop_image_as_square(img: bytes) -> bytes:
+    try:
+        img: ImageFile = Image.open(io.BytesIO(img))
+        width, height = img.size
+        crop_size = min(width, height)
+        _left = (width - crop_size) / 2
+        _top = (height - crop_size) / 2
+        _right = (width + crop_size) / 2
+        _bottom = (height + crop_size) / 2
+
+        _cropped_img = img.crop((_left, _top, _right, _bottom))
+        
+        if _cropped_img.width > 500:
+            _resample_filter = Image.Resampling.LANCZOS 
+        else:
+            _resample_filter = Image.Resampling.BICUBIC
+
+        resized_img = _cropped_img.resize((500, 500), resample=_resample_filter)
+
+        # Salvar a imagem cortada em bytes
+        _cropped_image_buffer = io.BytesIO()
+        _cropped_img.save(_cropped_image_buffer, format=img.format or 'PNG') # Preservar formato original ou usar PNG
+        _cropped_image_buffer.seek(0)
+        return _cropped_image_buffer.getvalue()
+    except Exception as e:
+        print(f"Erro ao cortar imagem: {e}")
+        return None
+
 async def _save_image_to_aux_db(bot:commands.Bot, message: discord.Message) -> discord.Message:
     _original_file: discord.Attachment = message.attachments[0]
     _file_bytes: bytes = await _original_file.read()
     
+    _cropped_file_bytes: bytes = _crop_image_as_square(img=_file_bytes)
+
     _file: discord.File = discord.File(
         filename=_original_file.filename,
         fp=io.BytesIO(_file_bytes)
@@ -74,7 +105,7 @@ def _create_embed(seizure: Seizure, message: discord.Message) -> discord.Embed:
     
     _embed.add_field(name='📷 Imagem da apreensão', value=f'[Ver imagem no tamanho original]({_image_url})', inline=False)
     
-    _embed.set_image(url=_image_url)
+    _embed.set_thumbnail(url=_image_url)
     
     _embed.set_footer(text=f'ID da apreensão: {seizure.seizure_id}')
 

@@ -108,11 +108,16 @@ class RefundButtonsView(ui.View):
         
         upper_limit_date: datetime = _get_upper_limit_date(interaction=interaction)
         
+        message_content: str | None
+        message_embed: discord.Embed
+
         message_content, message_embed = await new_refund_message_content(bot=self.bot, refund_id=refund_id, upper_limit_date=upper_limit_date)
         if pendents_count > 0:
             await interaction.message.edit(content=message_content, embed=message_embed)
             await interaction.response.send_message(content='Recebimento confirmado!', ephemeral=True, delete_after=3)
         else:
+            message_embed.title = 'Reembolso de apreensões [FINALIZADO]'
+            message_embed.color = discord.Color.red()
             message_embed.set_field_at(
                 index=2,
                 name = 'Reembolso finalizado',
@@ -172,10 +177,11 @@ class RefundButtonsView(ui.View):
 
         upper_limit_date: datetime = _get_upper_limit_date(interaction=interaction)
         
-        finishing_message: str        
+        finishing_message: str
         finishing_embed: discord.Embed
         finishing_message, finishing_embed = await new_refund_message_content(bot=self.bot, refund_id=refund_id, upper_limit_date=upper_limit_date, refund_finishing=True)
 
+        finishing_embed.title = 'Reembolso de apreensões [FINALIZADO]'
         finishing_embed.set_field_at(
             index=2,
             name = 'Não é mais possível confirmar retiradas',
