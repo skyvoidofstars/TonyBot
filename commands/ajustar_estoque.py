@@ -19,7 +19,7 @@ def setup_commands(bot:commands.Bot):
             discord.app_commands.Choice(name='Diferença de estoque', value='Diferença de estoque'),
         ]
     )
-    @discord.app_commands.checks.has_any_role(*AllowedRoles)
+    @discord.app_commands.checks.has_any_role(*allowed_roles)
     async def ajustar_estoque(interaction: discord.Interaction, item:str, quantidade:int, tipo_de_ajuste:str = 'Diferença de estoque'):
         await interaction.response.defer()
         session = _new_session()

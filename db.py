@@ -69,7 +69,7 @@ class SeizureRefund(Base):
     total_value = Column(Integer, nullable=False)
     redeemed_value = Column(Integer, nullable=True)
     message_id = Column(Integer, nullable=True)
-    status = Column(String(50), nullable=False, default='PENDENTE') # EM ANDAMENTO, FINALIZADO
+    status = Column(String(50), nullable=False, default='EM ANDAMENTO') # EM ANDAMENTO, FINALIZADO
     created_by = Column(Integer, ForeignKey('USERS.user_id'), nullable=False)
     created_at = Column(DateTime, nullable=False)
     finished_by = Column(Integer, ForeignKey('USERS.user_id'), nullable=True)

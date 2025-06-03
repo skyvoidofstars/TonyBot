@@ -2,7 +2,7 @@ import discord, regex
 from sqlalchemy.orm import Session
 from datetime import datetime
 from db import User, _new_session
-from config import brasilia_tz
+from config import brasilia_tz, allowed_roles
 
 def _extract_character_name(display_name: str) -> str:
     match: regex.Match = regex.match(r"^([\p{L}\s]+\p{L})", display_name)
@@ -30,3 +30,8 @@ def get_or_create_user(discord_user: discord.User) -> User:
         session.close()
 
     return user
+
+def has_user_admin_permission(discord_uer: discord.User):
+    if not any(role.id in allowed_roles for role in discord_uer.roles):
+        return False
+    return True

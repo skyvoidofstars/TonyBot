@@ -4,10 +4,11 @@ from discord.ext import commands
 from sqlalchemy.orm import Session
 from datetime import datetime
 from db import Seizure, Log, _new_session
-from config import AllowedRoles, brasilia_tz, LogChannel
+from config import brasilia_tz, LogChannel
+from utils.UserManager import has_user_admin_permission
 
 def _is_user_allowed(user: discord.User, seizure: Seizure) -> bool:
-    if user.id != seizure.user_id and not any(role.id in AllowedRoles for role in user.roles):
+    if user.id != seizure.user_id and not has_user_admin_permission(user):
         return False
     return True
     

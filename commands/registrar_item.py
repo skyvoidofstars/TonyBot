@@ -9,7 +9,7 @@ from utils.UserManager import get_or_create_user
 
 def setup_commands(bot:commands.Bot):
     @bot.tree.command(name='registrar_item', description='Registra um item no sistema')
-    @discord.app_commands.checks.has_any_role(*AllowedRoles)
+    @discord.app_commands.checks.has_any_role(*allowed_roles)
     @discord.app_commands.describe(
         item='Nome do item a ser registrado',
         categoria='Categoria do item a ser registrado',

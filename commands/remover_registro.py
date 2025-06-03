@@ -8,7 +8,7 @@ from datetime import datetime
 
 def setup_commands(bot:commands.Bot):
     @bot.tree.command(name='remover_registro', description='Remove um registro do baú')
-    @discord.app_commands.checks.has_any_role(*AllowedRoles)
+    @discord.app_commands.checks.has_any_role(*allowed_roles)
     @discord.app_commands.describe(
         id='ID do registro a ser removido'
     )

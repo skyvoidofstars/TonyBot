@@ -26,7 +26,8 @@ def _get_help_message(bot: commands.Bot) -> list[str]:
             ' - O **número do distintivo**\n'
             '\nhttps://media.discordapp.net/attachments/826170907735228436/1379173004289900715/image.png?ex=683f4674&is=683df4f4&hm=91ada4c6191f066d7f27d518dda2911f8e2927b21f10cc3260bdd4459e5ff98a&=&format=webp&quality=lossless'
         ),(
-            '- **Envie a imagem** no chat\n'
+            '- **Envie a imagem** no chat\n\n'
+            f'Dica: utilize **Windows + Shift + S** para capturar a imagem da apreensão, depois, só dar **Ctrl + V** no {_seizure_channel}\n\n'
             'O bot pegará sua imagem, anexará na apreensão e o registro será **concluído**\n'
             '\nhttps://media.discordapp.net/attachments/826170907735228436/1379176526150635700/image.png?ex=683f49bb&is=683df83b&hm=08c248c773bb77a32ca6890970560bec64138d4b7c0b679ed63dee0cf681a921&=&format=webp&quality=lossless'
         ),(

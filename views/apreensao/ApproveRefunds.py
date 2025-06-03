@@ -65,6 +65,8 @@ class ApproveRefundView(ui.View):
             await log_and_notify(bot=self.bot, interaction=interaction, text=e)
             return
         
+        await interaction.response.defer()
+        
         user: User = get_or_create_user(discord_user=interaction.user)
         
         session: Session = _new_session()

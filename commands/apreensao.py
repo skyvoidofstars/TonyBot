@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 from datetime import datetime
 from dateutil import parser
 from db import User, Seizure, _new_session
-from config import AllowedRoles, brasilia_tz, seizure_value
+from config import allowed_roles, brasilia_tz, seizure_value
 from utils.ErrorReporting import log_and_notify
 from views.apreensao.ApproveRefunds import ApproveRefundView
 
@@ -19,11 +19,12 @@ def _get_datetime_from_string(string: str) -> datetime:
     _datetime = _datetime.replace(hour=23, minute=59, second=59)
     
     return _datetime
+
 def setup_commands(bot: commands.Bot):
     apreensoes: app_commands.Group = app_commands.Group(name='apreensao', description='Controle de apreensões')
         
     @apreensoes.command(name='resumo', description='Gerar informações sobre fechamento')
-    @app_commands.checks.has_any_role(*AllowedRoles)
+    @app_commands.checks.has_any_role(*allowed_roles)
     @app_commands.describe(
         data_limite = 'Ex: 31/05/2025'
     )

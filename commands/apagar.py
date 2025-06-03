@@ -2,12 +2,13 @@ import discord
 from discord.ext import commands
 from db import _new_session, Log
 from datetime import datetime
-from config import *
+from utils.UserManager import has_user_admin_permission
+from config import brasilia_tz, LogChannel, MentionID
 
 def setup_commands(bot: commands.Bot):
     @bot.command(name='apagar', description='Apaga a mensagem mencionada e a própria do comando.')
     async def apagar(ctx: commands.Context):
-        if not any(role.id in AllowedRoles for role in ctx.author.roles):
+        if not has_user_admin_permission(discord_uer=ctx.author):
             return
         try:
             if ctx.message.reference:

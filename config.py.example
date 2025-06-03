@@ -1,30 +1,34 @@
-from datetime import timedelta, timezone
+from datetime import datetime, timedelta, timezone
 
 # Bot prefix
 command_prefix = '?'
 
 # Timezone
-brasilia_tz = timezone(timedelta(hours=-3))
+brasilia_tz: datetime = timezone(timedelta(hours=-3))
 
 # Default embeds width
-embed_width = 54
+embed_width: int = 54
 
 # Roles id to use managment commands
-AllowedRoles = [
+allowed_roles: list[int] = [
     0000000000000000000  # Role name
 ]
 
 # Allowed chest slash command channels 
-ChestAllowedChannels = [
+ChestAllowedChannels: list[int] = [
     0000000000000000000 # Channel name
 ]
 
 # Discord server id and channel id for bot logs
-LogChannel = 000000000000000000
+LogChannel:id = 000000000000000000
 
-# Seizure Channel
-SeizureChannel = 1378205246635118602
+# Seizures
+SeizureChannel:id = 000000000000000000
+refund_channel_id: int = 000000000000000000
+seizure_value: int = 000
 
+# Canal auxiliar
+aux_db_channel: int = 1378362943821053982
 # ID to be mentioned in errors or initializations
 # 000000000000000000 to user or '&000000000000000000' to roles
-MentionID = 000000000000000000
+MentionID:id = 000000000000000000
