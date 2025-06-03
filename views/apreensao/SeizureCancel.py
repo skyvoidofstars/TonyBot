@@ -1,4 +1,4 @@
-import discord, regex
+import discord
 from discord import ui
 from discord.ext import commands
 from sqlalchemy.orm import Session
@@ -53,6 +53,6 @@ class SeizureCancelView(ui.View):
         original_embed = interaction.message.embeds[0] 
         original_embed.color = discord.Color.dark_red() 
         original_embed.title = f'{original_embed.title} [CANCELADA]'
-        await interaction.response.edit_message(content=f'Apreensão cancelada por {interaction.user.mention} em {datetime.now(brasilia_tz).strftime('%d/%m/%Y às %H:%M:%S')}.', embed=original_embed, view=None)
+        await interaction.response.edit_message(content=f'Apreensão cancelada por {interaction.user.mention} <t:{int(datetime.now().timestamp())}:R>.', embed=original_embed, view=None)
         
         self.stop()

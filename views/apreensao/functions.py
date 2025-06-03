@@ -7,6 +7,7 @@ from db import User, Seizure, SeizureRefund, _new_session
 from config import brasilia_tz, embed_width, seizure_channel_id, aux_db_channel, seizure_value
 from utils.ImageManager import get_image_url_from_message
 from utils.PersistantViewManager import update_new_seizure_message
+from utils.ANSI import Colors
 from views.apreensao.SeizureCancel import SeizureCancelView
 
 def _deleve_invalid_entries(session: Session, user_id: int, seizure_id: int):
@@ -107,7 +108,7 @@ async def finish_seizure(bot: commands.Bot, session: Session, seizure: Seizure, 
     except Exception as e:
         print(f"Erro ao chamar update_new_seizure_message em finish_seizure: {e}")
         
-def _get_refund_information(refund_id: int) -> str:
+def _get_refund_information(refund_id: int, refund_finishing: bool) -> str:
     _session: Session = _new_session()
     _refund_list: list[tuple[str, int, datetime]] = (
         _session.query(
@@ -138,23 +139,28 @@ def _get_refund_information(refund_id: int) -> str:
 
     _session.close()
     
-    _refund_information: str = f'# {'Nome do funcionário'.center(29, ' ')} {'Valor'.center(10, ' ')}  Data e hora da retirada\n'
+    _refund_information: str = f'{Colors.BLUE}⚙️{'Funcionário'.center(24, ' ')}|{'Valor'.center(11, ' ')}|{'Retirada'.center(13)}\n'
     for _row in _refund_list:
         _user = _row[0]
         _value = _row[1]
         _redeemed_at = _row[2]
-        _prefix: str = ''
+        _ansi_prefix: str = ''
+        _ansi_suffix: str = Colors.END
         _emoji: str = ''
         if _redeemed_at:
-            _prefix = '+'
+            _ansi_prefix = Colors.GREEN
             _emoji = '✅'
-            _date_if_redeemed: str = _redeemed_at.strftime('%d/%m/%Y às %H:%M:%S')
+            _date_if_redeemed: str = _redeemed_at.strftime('%d/%m %H:%M')
         else:
-            _prefix = '-'
+            _ansi_prefix = Colors.YELLOW
             _emoji = '⏳'
             _date_if_redeemed: str = 'PENDENTE'
+            if refund_finishing:
+                _ansi_prefix = Colors.RED
+                _emoji = '📦'
+                _date_if_redeemed = 'FINALIZADO'
         _formatted_value: str = f'{_value:,}'.replace(',','.')
-        _refund_information += f'{_prefix} {_emoji} {_user.ljust(25)[:25]} | $ {_formatted_value.rjust(6)} | {_date_if_redeemed}\n'
+        _refund_information += f'{_ansi_prefix}{_emoji} {_user.ljust(22)[:22]} | $ {_formatted_value.rjust(7)} | {_date_if_redeemed}{Colors.END}\n'
 
     _refund_information += (
         f'\n'
@@ -162,7 +168,7 @@ def _get_refund_information(refund_id: int) -> str:
         f'Valor resgatado: {_redeemed_value} {f'(restam {_remaining_value})' if _remaining_value_int > 0 else ''}\n'
     )
 
-    _refund_information = _refund_information.strip()
+    _refund_information = f'```ansi\n{_refund_information.strip()}\n```'
     
     return _refund_information
 
@@ -178,17 +184,22 @@ def _get_pendent_users_mention(refund_id: int) -> str:
         .all()
     )
 
-    _mentions = ' '
+    _mentions: str = ''
     for _user in seizure_user_ids_list:
         _mentions += f'<@{_user[0]}> '
-        
+    
+    if len(_mentions) == 0:
+        return None
+
+    _mentions = f'|| {_mentions} ||'    
+
     return _mentions
         
-def new_refund_message_content(upper_limit_date: datetime, refund_id: int):
+async def new_refund_message_content(bot: commands.Bot, upper_limit_date: datetime, refund_id: int, refund_finishing: bool = False) -> list[str | None, discord.Embed]:
     
     session: Session = _new_session()
     _user_id: int = session.query(SeizureRefund.created_by).filter(SeizureRefund.refund_id == refund_id).scalar()
-    
+    _author_user: discord.User = await bot.fetch_user(_user_id)
     lower_limit_date: datetime = (
         session.query(func.min(Seizure.created_at).label(''))
         .filter(Seizure.refund_id == refund_id)
@@ -196,19 +207,38 @@ def new_refund_message_content(upper_limit_date: datetime, refund_id: int):
     )
     session.close()
     
-    refund_info: str = _get_refund_information(refund_id=refund_id)
-        
     lower_limit_date = lower_limit_date.strftime(format='%d/%m')
     upper_limit_date = upper_limit_date.strftime(format='%d/%m')
     
-    mention_users: str = _get_pendent_users_mention(refund_id=refund_id)
+    message_content: str = _get_pendent_users_mention(refund_id=refund_id) 
+
+    message_embed: discord.Embed = discord.Embed(
+        color = discord.Color.green() if not refund_finishing else discord.Color.red(),
+        title = f'Reembolso de apreensões',
+        timestamp = datetime.now(brasilia_tz)
+    )
+    refund_info: str = _get_refund_information(refund_id=refund_id, refund_finishing=refund_finishing)
+
+    message_embed.set_author(name=_author_user.name, icon_url=_author_user.display_avatar.url)
+
+    message_embed.add_field(
+        name = '📅 Período considerado',
+        value = f'```\n{lower_limit_date} à {upper_limit_date}\n```',
+        inline = False
+    )
+
+    message_embed.add_field(
+        name = '💵 Reembolsos',
+        value = refund_info,
+        inline = False
+    )
+
+    message_embed.add_field(
+        name = 'Para confirmar o recebimento, clique no botão abaixo',
+        value = '',
+        inline = False
+    )
+
+    message_embed.set_footer(text=f'ID do reembolso: {refund_id}')
     
-    message_content: str = (
-            f'## Período: {lower_limit_date} à {upper_limit_date}\n\n'
-            f'```diff\n{refund_info}\n```\n\n'
-            f'||{mention_users}||\n\n'
-            f'Para confirmar a retirada do valor do baú, clique no botão abaixo\n\n'
-            f'-# Reembolsos gerados por <@{_user_id}> sob o ID {refund_id}'
-        )
-    
-    return message_content
+    return message_content, message_embed

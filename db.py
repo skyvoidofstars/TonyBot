@@ -52,6 +52,7 @@ class Seizure(Base):
     officer_name = Column(String(60), nullable=False)
     officer_badge = Column(String(10), nullable=False)
     image_url = Column(String(2048), nullable=True)
+    cropped_image_url = Column(String(2048), nullable=True)
     observations = Column(String(1000), nullable=True)
     status = Column(String(50), nullable=False, default='PENDENTE') # PENDENTE, CRIADO, REEMBOLSADO, RESGATADO, CANCELADO    
     created_at = Column(DateTime, nullable=False)

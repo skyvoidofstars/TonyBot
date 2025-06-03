@@ -66,6 +66,8 @@ class ApproveRefundView(ui.View):
             return
         
         await interaction.response.defer()
+
+        bot_advice = await interaction.channel.send(content=f'{interaction.user.mention} Publicação iniciada, aguarde alguns segundos...')
         
         user: User = get_or_create_user(discord_user=interaction.user)
         
@@ -93,10 +95,11 @@ class ApproveRefundView(ui.View):
         _update_seizure_status(status='REEMBOLSADO', refund_id=new_refund.refund_id, limit_date=self.upper_limit_date)
         await _update_seizure_messages(bot=self.bot, refund_id=new_refund.refund_id)
         
-        message_content: str = new_refund_message_content(refund_id=new_refund.refund_id, upper_limit_date=self.upper_limit_date)
+        message_content, message_embed = await new_refund_message_content(bot=self.bot, refund_id=new_refund.refund_id, upper_limit_date=self.upper_limit_date)
 
-        refund_message = await refund_channel.send(
+        refund_message: discord.Message = await refund_channel.send(
             content=message_content,
+            embed=message_embed,
             view=RefundButtonsView(bot=self.bot)
         )
         
@@ -104,6 +107,8 @@ class ApproveRefundView(ui.View):
         session.commit()
         session.close()
         
+        await bot_advice.edit(content=f'Reembolsos publicados: {refund_message.jump_url}\nDeletando mensagem em 5 segundos...', delete_after=5)
+        await interaction.message.delete(delay=5)
         await self.on_timeout()
         
     async def on_timeout(self):

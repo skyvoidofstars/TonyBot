@@ -5,15 +5,15 @@ from datetime import datetime
 from dateutil import parser
 from sqlalchemy import func
 from sqlalchemy.orm import Session
-from db import Seizure, SeizureRefund, _new_session
+from db import User, Seizure, SeizureRefund, _new_session
 from utils.UserManager import get_or_create_user
 from utils.ErrorReporting import log_and_notify
 from views.apreensao.functions import new_refund_message_content
-from config import brasilia_tz, seizure_value
+from config import brasilia_tz, seizure_value, refund_channel_id
 
 def _get_refund_id(interaction: discord.Interaction) -> int:
-    _pattern: str = r'(?<=sob o ID )[0-9]+'
-    _string: str = interaction.message.content
+    _pattern: str = r'[0-9]+'
+    _string: str = interaction.message.embeds[0].footer.text
     _match_str: str = regex.search(pattern=_pattern, string=_string).group(0)
     _refund_id: int = int(_match_str.strip())
     
@@ -71,12 +71,11 @@ def _update_refund_redeemed_value(refund_id: int):
     finally:
         _session.close()
 
-def _get_upper_limit_date(interaction: discord.Interaction):
-    _pattern: str = r'(?<=à )[0-9]{2}/[0-9]{2}'
-    _string: str = interaction.message.content
-    _match_str: str = regex.search(pattern=_pattern, string=_string).group(0)
-    _upper_limit_date: datetime = _get_datetime_from_string(_match_str)
-    
+def _get_upper_limit_date(interaction: discord.Interaction) -> datetime:
+    _field_value: str =  interaction.message.embeds[0].fields[0].value
+    _date_string: str = _field_value.strip()[-9:][:5] # '````\n01/12\n```' -[-9:]-> '01/12\n```' -[:5]-> '01/12'
+    _upper_limit_date: datetime = _get_datetime_from_string(_date_string)
+
     return _upper_limit_date
 
 class RefundButtonsView(ui.View):
@@ -100,13 +99,48 @@ class RefundButtonsView(ui.View):
         
         _update_refund_redeemed_value(refund_id=refund_id)
         
+        session: Session = _new_session()
+        pendents_count: int = (
+            session.query(func.count(Seizure.user_id))
+            .filter(Seizure.status == 'REEMBOLSADO', Seizure.refund_id == refund_id)
+            .scalar()
+        )
+        
         upper_limit_date: datetime = _get_upper_limit_date(interaction=interaction)
         
-        await interaction.message.edit(content=new_refund_message_content(refund_id=refund_id, upper_limit_date=upper_limit_date))
-        await interaction.response.send_message(content='Recebimento confirmado!', ephemeral=True, delete_after=3)
+        message_content, message_embed = await new_refund_message_content(bot=self.bot, refund_id=refund_id, upper_limit_date=upper_limit_date)
+        if pendents_count > 0:
+            await interaction.message.edit(content=message_content, embed=message_embed)
+            await interaction.response.send_message(content='Recebimento confirmado!', ephemeral=True, delete_after=3)
+        else:
+            message_embed.set_field_at(
+                index=2,
+                name = 'Reembolso finalizado',
+                value = f'Todos os funcionários resgataram seus valores <t:{int(datetime.now().timestamp())}:R>',
+                inline = False
+            )
+            await interaction.message.edit(content=message_content, embed=message_embed, view=None)
+            await interaction.response.send_message(content='Recebimento confirmado!', ephemeral=True, delete_after=3)
+
+            refund: SeizureRefund = (
+                session.query(SeizureRefund)
+                .filter(SeizureRefund.refund_id == refund_id)
+                .first()
+            )
+
+            refund.status = 'FINALIZADO'
+            refund.finished_at = datetime.now(brasilia_tz)
+            try:
+                session.commit()
+            except Exception as e:
+                session.rollback()
+                await interaction.response.send_message(content='Erro ao finalizar o reembolso.', ephemeral=True)            
+            self.stop()
+        
+        session.close()
    
-    @ui.button(label='[SUP+] Finalizar pagamentos', style=discord.ButtonStyle.danger, custom_id='finish_payments_button')
-    async def finalizar_pagamento(self, interaction: discord.Interaction, button: ui.Button):
+    @ui.button(label='Finalizar pagamentos', style=discord.ButtonStyle.danger, custom_id='finish_payments_button')
+    async def sup_finalizar_pagamento(self, interaction: discord.Interaction, button: ui.Button):
         try:
             refund_id: int = _get_refund_id(interaction=interaction)
         except Exception as e:
@@ -137,16 +171,20 @@ class RefundButtonsView(ui.View):
             session.close()
 
         upper_limit_date: datetime = _get_upper_limit_date(interaction=interaction)
-        finishing_message: str = new_refund_message_content(refund_id=refund_id, upper_limit_date=upper_limit_date)
+        
+        finishing_message: str        
+        finishing_embed: discord.Embed
+        finishing_message, finishing_embed = await new_refund_message_content(bot=self.bot, refund_id=refund_id, upper_limit_date=upper_limit_date, refund_finishing=True)
 
-        finishing_message = finishing_message.replace('⏳', '🛑')
-        finishing_message = finishing_message.replace(
-            'Para confirmar a retirada do valor do baú, clique no botão abaixo',
-            f'Reembolso finalizado por {interaction.user.mention} em {datetime.now(brasilia_tz).strftime('%d/%m')} às {datetime.now(brasilia_tz).strftime('%H:%M')}\n'
-            'Não é mais possível confirmar retiradas!'
+        finishing_embed.set_field_at(
+            index=2,
+            name = 'Não é mais possível confirmar retiradas',
+            value = f'Reembolso finalizado por {interaction.user.mention} <t:{int(datetime.now().timestamp())}:R>\n' \
+                    'O valor restante foi depositado no baú!',
+            inline = False
         )
 
-        await interaction.message.edit(content=finishing_message, view=None)
+        await interaction.message.edit(content=finishing_message, embed=finishing_embed, view=None)
         self.stop()
 
     async def on_error(self, interaction: discord.Interaction, error: str, item):
