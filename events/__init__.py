@@ -1,5 +1,6 @@
 import os, importlib
 
+
 def load_all_events(bot):
     for filename in os.listdir(os.path.dirname(__file__)):
         if filename.endswith(".py") and filename != "__init__.py":
