@@ -84,7 +84,6 @@ def setup_commands(bot: commands.Bot):
     async def item(
         interaction: discord.Interaction, item: str, movimentações: int = 10
     ):
-
         session = _new_session()
         item = session.query(Item).filter(Item.item_name == item).first()
 
@@ -189,7 +188,6 @@ def setup_commands(bot: commands.Bot):
             + "\n"
         )
         for id, item, qty, observations in movements:
-
             regex_type: str = "(?<=Tipo de ajuste=).*$"
             adjustment_type = re.search(regex_type, observations)
 
@@ -197,9 +195,7 @@ def setup_commands(bot: commands.Bot):
             summary += (
                 f"{prefix}{str(id).rjust(5)}| {item.ljust(16)[:16]}| {str(abs(qty)).rjust(7) if item != 'Dinheiro' else '$' + str(abs(qty)).rjust(6)}| {adjustment_type.group() if adjustment_type else 'Sem descrição'}".ljust(
                     embed_width
-                )[
-                    :embed_width
-                ]
+                )[:embed_width]
                 + "\n"
             )
 

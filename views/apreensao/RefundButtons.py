@@ -147,7 +147,6 @@ class RefundButtonsView(ui.View):
                 content="Recebimento confirmado!", ephemeral=True, delete_after=3
             )
         else:
-            message_embed.title = "Reembolso de apreensões [FINALIZADO]"
             message_embed.color = discord.Color.red()
             message_embed.set_field_at(
                 index=2,
@@ -233,7 +232,6 @@ class RefundButtonsView(ui.View):
             refund_finishing=True,
         )
 
-        finishing_embed.title = "Reembolso de apreensões [FINALIZADO]"
         finishing_embed.set_field_at(
             index=2,
             name="Não é mais possível confirmar retiradas",

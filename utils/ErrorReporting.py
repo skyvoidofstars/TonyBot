@@ -16,18 +16,32 @@ async def log_and_notify(
     session: Session = _new_session()
 
     if interaction.command:
-        await bot.get_guild(_guild_id).get_channel(_channel_id).send(
-            f"{interaction.user.mention} Erro ao executar o comando {interaction.command.name}!\n\n{text}"
+        await (
+            bot.get_guild(_guild_id)
+            .get_channel(_channel_id)
+            .send(
+                f"{interaction.user.mention} Erro ao executar o comando {interaction.command.name}!\n\n{text}"
+            )
         )
-        await bot.get_guild(interaction.guild.id).get_channel(LogChannel).send(
-            f"<@{MentionID}>\nErro no comando {interaction.command.name} por {interaction.user.name}:\n{text}"
+        await (
+            bot.get_guild(interaction.guild.id)
+            .get_channel(LogChannel)
+            .send(
+                f"<@{MentionID}>\nErro no comando {interaction.command.name} por {interaction.user.name}:\n{text}"
+            )
         )
     elif interaction.type == discord.InteractionType.component:
-        await bot.get_guild(_guild_id).get_channel(_channel_id).send(
-            f"{interaction.user.mention} Erro ao executar uma ação!\n\n{text}"
+        await (
+            bot.get_guild(_guild_id)
+            .get_channel(_channel_id)
+            .send(f"{interaction.user.mention} Erro ao executar uma ação!\n\n{text}")
         )
-        await bot.get_guild(interaction.guild.id).get_channel(LogChannel).send(
-            f"<@{MentionID}>\nErro ao executar uma ação por {interaction.user.name}:\n{text}"
+        await (
+            bot.get_guild(interaction.guild.id)
+            .get_channel(LogChannel)
+            .send(
+                f"<@{MentionID}>\nErro ao executar uma ação por {interaction.user.name}:\n{text}"
+            )
         )
 
     _log: Log = Log(

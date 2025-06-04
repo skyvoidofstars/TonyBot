@@ -10,7 +10,6 @@ from views.apreensao.functions import finish_seizure
 
 
 def setup_events(bot: commands.Bot):
-
     @bot.event
     async def on_message(message: discord.Message):
         if message.author.bot:

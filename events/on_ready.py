@@ -1,12 +1,10 @@
-import discord, time
+import discord
 from discord.ext import commands
-from config import *
+from config import LogChannel, MentionID
 from datetime import datetime
-from sqlalchemy.orm import Session
-from db import SeizureRefund, _new_session
 from utils.CommitInfo import get_latest_commit_info
 from utils.PersistantViewManager import update_new_seizure_message
-from utils.ANSI import Colors
+from utils.ImageManager import get_seizure_report_image
 from views.apreensao.NewSeizure import NewSeizureView
 from views.apreensao.SeizureCancel import SeizureCancelView
 from views.apreensao.RefundButtons import RefundButtonsView
@@ -41,5 +39,5 @@ def setup_events(bot: commands.Bot):
             f"{commit_summary}\n"
             f"||<@{MentionID}>||"
         )
-        for guild in bot.guilds:
-            await bot.get_guild(guild.id).get_channel(LogChannel).send(message_content)
+        
+        await bot.get_channel(LogChannel).send(message_content)

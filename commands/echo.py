@@ -16,6 +16,6 @@ def setup_commands(bot: commands.Bot):
             replied_message = await ctx.channel.fetch_message(
                 ctx.message.reference.message_id
             )
-            await ctx.send(message, reference=replied_message)
+            await ctx.send(content=message, reference=replied_message)
         else:
-            await ctx.send(message)
+            await ctx.send(content=message)

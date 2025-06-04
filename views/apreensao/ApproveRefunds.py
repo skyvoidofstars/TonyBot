@@ -43,8 +43,6 @@ async def _update_seizure_messages(bot: commands.Bot, refund_id: int):
         except Exception as e:
             continue
         _embed: discord.Embed = _fetched_message.embeds[0]
-
-        _embed.title = "Registro de apreensão [REEMBOLSADO]"
         _embed.color = discord.Color.green()
 
         await _fetched_message.edit(embed=_embed, view=None)

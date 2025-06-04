@@ -12,7 +12,6 @@ def setup_commands(bot: commands.Bot):
     @discord.app_commands.checks.has_any_role(*allowed_roles)
     @discord.app_commands.describe(id="ID do registro a ser removido")
     async def remover_registro(interaction: discord.Interaction, id: int):
-
         session: Session = _new_session()
         chest: Chest = session.query(Chest).filter_by(chest_id=id).first()
 
