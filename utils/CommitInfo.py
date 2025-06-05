@@ -19,6 +19,6 @@ def get_latest_commit_info(repo_path='.') -> tuple[str, str, str, str]:
     for item in diff.iter_change_type('R'):
         lines.append(f'{Colors.CYAN}{item.b_path} -> {item.a_path}{Colors.END}')
 
-    commit_summary = '```ansi\n' + '\n'.join(lines) + '\n```'
+    commit_summary = f'```ansi{'\n'.join(lines)}```'
 
     return commit.hexsha[:10], commit.message.strip(), commit_summary

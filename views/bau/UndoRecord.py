@@ -1,4 +1,4 @@
-import discord, regex
+import discord
 from discord import ui
 from discord.ext import commands
 from sqlalchemy.orm import Session
@@ -23,7 +23,7 @@ class UndoRecordView(ui.View):
             self.session.query(Chest).filter(Chest.chest_id == chest_id).first()
         )
 
-    @ui.button(label='Desfazer', style=discord.ButtonStyle.secondary, emoji='📦')
+    @ui.button(label='Desfazer', style=discord.ButtonStyle.secondary)
     async def desfazer(self, interaction: discord.Interaction, button: ui.Button):
         if not _is_user_allowed(interaction.user, self.chest):
             await interaction.response.send_message(
