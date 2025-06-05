@@ -24,7 +24,7 @@ def get_seizure_report_image(dates_interval: str, tow_count: int) -> discord.Fil
     stroke_width: int = 3
 
     unit_value: str = f'{f'{seizure_value:,}'.rjust(10)}'.replace(',', '.') + ',00'
-    total_value: str = f'{f'{seizure_value*tow_count:,}'.rjust(10)}' + ',00'
+    total_value: str = f'{f'{seizure_value*tow_count:,}'.rjust(10)}'.replace(',', '.') + ',00'
     tow_count_text: str = f'{tow_count} reboques'
 
     img: Image = Image.open('assets/report_template.png').convert('RGBA')
