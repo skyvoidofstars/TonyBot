@@ -26,7 +26,7 @@ def _update_seizure_status(status: str, refund_id: int, limit_date: datetime):
     session.commit()
 
 
-async def _update_seizure_messages(bot: commands.Bot, refund_id: int):
+async def _update_seizure_messages(bot: commands.Bot, refund_id: int, refund_message: str):
     _session: Session = _new_session()
     _seizure_messages: list[tuple[int]] = (
         _session.query(Seizure.message_id)
@@ -44,6 +44,11 @@ async def _update_seizure_messages(bot: commands.Bot, refund_id: int):
             continue
         _embed: discord.Embed = _fetched_message.embeds[0]
         _embed.color = discord.Color.green()
+
+        _embed.add_field(
+            name=f'Reembolso realizado <t:{int(datetime.now().timestamp())}:R>',
+            value=refund_message
+        )
 
         await _fetched_message.edit(embed=_embed, view=None)
         await _fetched_message.add_reaction('✅')
@@ -108,7 +113,6 @@ class ApproveRefundView(ui.View):
             refund_id=new_refund.refund_id,
             limit_date=self.upper_limit_date,
         )
-        await _update_seizure_messages(bot=self.bot, refund_id=new_refund.refund_id)
 
         message_content, message_embed = await new_refund_message_content(
             bot=self.bot,
@@ -121,10 +125,13 @@ class ApproveRefundView(ui.View):
             embed=message_embed,
             view=RefundButtonsView(bot=self.bot),
         )
+        await _update_seizure_messages(bot=self.bot, refund_id=new_refund.refund_id, refund_message=refund_message.jump_url)
 
         new_refund.message_id = refund_message.id
         session.commit()
         session.close()
+
+
 
         await bot_advice.edit(
             content=f'Reembolsos publicados: {refund_message.jump_url}\nDeletando mensagem em 5 segundos...',

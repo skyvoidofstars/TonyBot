@@ -86,39 +86,43 @@ def setup_commands(bot: commands.Bot):
             .scalar()
         )
         if item == 'Dinheiro':
-            Quantity: str = f'$ {str(quantidade)}'
-            StockQty: str = f'$ {str(StockQty)}'
+            Quantity: str = f'$ {f'{quantidade:,}'.replace(',','.')}'
+            StockQty: str = f'$ {f'{StockQty:,}'.replace(',','.')}'
+        else:
+            Quantity: str = f'{f'{quantidade:,}'.replace(',','.')}'
+            StockQty: str = f'{f'{StockQty:,}'.replace(',','.')}'
+            
 
-        chest_embed: discord.Embed = discord.Embed(
+        embed: discord.Embed = discord.Embed(
             title='Reposição de baú',
             color=discord.Color.green(),
             timestamp=datetime.now(brasilia_tz),
         )
 
-        chest_embed.set_author(
+        embed.set_author(
             name=interaction.user.name, icon_url=interaction.user.display_avatar.url
         )
 
-        chest_embed.add_field(
+        embed.add_field(
             name='👤 Funcionário',
             value=f'```\n{user.user_character_name.ljust(embed_width)}\n```',
             inline=False,
         )
-        chest_embed.add_field(
+        embed.add_field(
             name='📦 Item', value=f'```\n{ThisItem.item_name}\n```', inline=True
         )
-        chest_embed.add_field(
+        embed.add_field(
             name='🔢 Quantidade', value=f'```\n{Quantity}\n```', inline=True
         )
-        chest_embed.add_field(name='🏷️ Em estoque', value=f'```\n{StockQty}\n```', inline=True)
+        embed.add_field(name='🏷️ Em estoque', value=f'```\n{StockQty}\n```', inline=True)
         if observação:
-            chest_embed.add_field(
+            embed.add_field(
                 name='📝 Observações',
                 value=f'```\n{'\n'.join(textwrap.wrap(observação, width=embed_width))}\n```',
                 inline=False,
             )
 
-        chest_embed.set_footer(text=f'ID da movimentação: {chest.chest_id}')
+        embed.set_footer(text=f'ID da movimentação: {chest.chest_id}')
 
         msg: discord.Message = await interaction.followup.send(embed=embed)
 
@@ -212,8 +216,11 @@ def setup_commands(bot: commands.Bot):
             .scalar()
         )
         if item == 'Dinheiro':
-            Quantity: str = f'$ {str(quantidade)}'
-            StockQty: str = f'$ {str(StockQty)}'
+            Quantity: str = f'$ {f'{quantidade:,}'.replace(',','.')}'
+            StockQty: str = f'$ {f'{StockQty:,}'.replace(',','.')}'
+        else:
+            Quantity: str = f'{f'{quantidade:,}'.replace(',','.')}'
+            StockQty: str = f'{f'{StockQty:,}'.replace(',','.')}'
 
         embed: discord.Embed = discord.Embed(
             title='Retirada do baú',

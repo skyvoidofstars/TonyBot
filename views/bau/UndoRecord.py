@@ -39,7 +39,7 @@ class UndoRecordView(ui.View):
         self.session.commit()
         self.session.close()
         await self.bot.get_channel(LogChannel).send(
-            content=f'Registro de {user_character_name} de {quantity} x {item_name}'
+            content=f'Registro de {user_character_name} de {quantity} x {item_name} '
             f'desfeito por {interaction.user.mention}')
         embed: discord.Embed = interaction.message.embeds[0]
         embed.color = discord.Color.light_gray()

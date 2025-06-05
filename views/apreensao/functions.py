@@ -290,7 +290,10 @@ async def new_refund_message_content(
     lower_limit_date = lower_limit_date.strftime(format='%d/%m')
     upper_limit_date = upper_limit_date.strftime(format='%d/%m')
 
-    message_content: str = _get_pendent_users_mention(refund_id=refund_id)
+    if not refund_finishing:
+        message_content: str = _get_pendent_users_mention(refund_id=refund_id)
+    else:
+        message_content: str = ''
 
     message_embed: discord.Embed = discord.Embed(
         color=discord.Color.green() if not refund_finishing else discord.Color.red(),
