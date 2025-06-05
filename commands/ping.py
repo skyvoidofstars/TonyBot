@@ -9,3 +9,17 @@ def setup_commands(bot: commands.Bot):
         await interaction.response.send_message(
             f'Pong! {latency}ms', ephemeral=True, delete_after=5
         )
+    #
+    ##
+    ##
+    ##
+    ##
+    ##
+    ##
+    ##
+    ##
+    ##
+    ##
+    ##
+    ##
+    ##

@@ -34,8 +34,8 @@ def setup_events(bot: commands.Bot):
             f'Bot (re)inicializado às {datetime.now().strftime('%H:%M:%S')}\n'
             f'{len(syncs)} comandos sincronizados\n\n'
             f'Último commit: `{commit_hash}`.\n'
-            f'## {commit_msg.split('\n', 1)[0]}\n'
-            f'{commit_msg.split('\n', 1)[1] if len(commit_msg.split('\n', 1)) > 1 else ''}\n'
+            f'## {commit_msg}\n'
+            # f'{commit_msg.split('\n', 1)[1] if len(commit_msg.split('\n', 1)) > 1 else ''}\n'
             f'{commit_summary}\n'
             f'||<@{MentionID}>||'
         )
