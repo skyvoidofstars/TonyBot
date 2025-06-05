@@ -57,13 +57,13 @@ def get_latest_commit_info(repo_path='.') -> tuple[str, str, str]:
         
         match True:
             case d_item.new_file:
-                output_lines.append(f'{Colors.RED}D {formatted_display_path}{Colors.END} | {stats_column_str}')
+                output_lines.append(f'{Colors.RED}D {formatted_display_path}{Colors.END} | {stats_column_str}'[:111])
             case d_item.deleted_file:
-                output_lines.append(f'{Colors.GREEN}A {formatted_display_path}{Colors.END} | {stats_column_str}')
+                output_lines.append(f'{Colors.GREEN}A {formatted_display_path}{Colors.END} | {stats_column_str}'[:111])
             case d_item.renamed_file:
-                output_lines.append(f'{Colors.CYAN}R {formatted_display_path}{Colors.END} | {stats_column_str}')
+                output_lines.append(f'{Colors.CYAN}R {formatted_display_path}{Colors.END} | {stats_column_str}'[:111])
             case _:
-                output_lines.append(f'{Colors.YELLOW}M {formatted_display_path}{Colors.END} | {stats_column_str}')
+                output_lines.append(f'{Colors.YELLOW}M {formatted_display_path}{Colors.END} | {stats_column_str}'[:111])
 
     output_lines.sort() 
     
