@@ -12,7 +12,7 @@ def get_latest_commit_info(repo_path='.') -> tuple[str, str, str]:
 
     commit_file_stats = commit.stats.files
 
-    path_display_width = 60
+    path_display_width = 30
 
     for d_item in diff_items:
         current_path = d_item.b_path or d_item.a_path 
@@ -42,7 +42,7 @@ def get_latest_commit_info(repo_path='.') -> tuple[str, str, str]:
                 plus_symbols = '+' * (insertions // 10)
                 minus_symbols = '-' * (deletions // 10)
                 
-                stats_column_str = f'{str(total_lines_changed).rjust(6)} {Colors.GREEN}{plus_symbols}{Colors.RED}{minus_symbols}{Colors.END}'
+                stats_column_str = f'{str(total_lines_changed).rjust(4)} {Colors.GREEN}{plus_symbols}{Colors.RED}{minus_symbols}{Colors.END}'
             else:
                 stats_column_str = 'Mode/Other'
         
@@ -69,4 +69,4 @@ def get_latest_commit_info(repo_path='.') -> tuple[str, str, str]:
     
     commit_summary = f'```ansi\n{'\n'.join(output_lines)}```'
     
-    return commit.hexsha[:10], commit.message, commit_summary
+    return commit.hexsha[:10], commit.message, commit_summary[:1600]
