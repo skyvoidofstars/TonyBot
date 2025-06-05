@@ -29,7 +29,7 @@ def _get_valid_seizure_count(
     _valid_seizure_count: int = (
         session.query(func.count(Seizure.seizure_id))
         .filter(
-            or_(Seizure.status == "CRIADO", Seizure.status == "REEMBOLSADO"),
+            or_(Seizure.status == 'CRIADO', Seizure.status == 'REEMBOLSADO'),
             Seizure.created_at >= lower_limit_date,
             Seizure.created_at <= upper_limit_date,
         )
@@ -42,18 +42,20 @@ def _get_valid_seizure_count(
 
 def setup_commands(bot: commands.Bot):
     apreensoes: app_commands.Group = app_commands.Group(
-        name="apreensao", description="Controle de apreensões"
+        name='apreensão', description='Controle de apreensões'
     )
 
-    @apreensoes.command(name="resumo", description="Gerar informações sobre fechamento")
+    @apreensoes.command(
+        name='publicar-reembolsos', description='Gerar informações sobre fechamento'
+    )
     @app_commands.checks.has_any_role(*allowed_roles)
     @app_commands.describe(data_fim=f'Ex: {date.today().strftime('%d/%m/%y')}')
-    async def resumo(interaction: discord.Interaction, data_fim: str):
+    async def publicar_reembolsos(interaction: discord.Interaction, data_fim: str):
         try:
             upper_limit_date: datetime = _get_datetime_from_string(data_fim)
         except (ValueError, TypeError, parser.ParserError) as e:
             await interaction.response.send_message(
-                content=f"Falha ao extrair data de `{data_fim}`, verifique e tente novamente"
+                content=f'Falha ao extrair data de `{data_fim}`, verifique e tente novamente'
             )
             return
 
@@ -61,17 +63,17 @@ def setup_commands(bot: commands.Bot):
         seizure_list: list[tuple[str, int]] = (
             session.query(
                 User.user_character_name,
-                (func.count(Seizure.seizure_id) * seizure_value).label("total_value"),
+                (func.count(Seizure.seizure_id) * seizure_value).label('total_value'),
             )
             .join(User, User.user_id == Seizure.user_id)
-            .filter(Seizure.status == "CRIADO", Seizure.created_at <= upper_limit_date)
+            .filter(Seizure.status == 'CRIADO', Seizure.created_at <= upper_limit_date)
             .group_by(User.user_character_name)
             .order_by(User.user_character_name)
         )
 
         lower_limit_date: datetime = (
-            session.query(func.min(Seizure.created_at).label(""))
-            .filter(Seizure.status == "CRIADO")
+            session.query(func.min(Seizure.created_at).label(''))
+            .filter(Seizure.status == 'CRIADO')
             .scalar()
         ) or datetime.now(brasilia_tz)
 
@@ -91,16 +93,16 @@ def setup_commands(bot: commands.Bot):
         _total_value: int = 0
         for _character, _value in seizure_list:
             _total_value += _value
-            value = f"{_value:,}".replace(",", ".")
+            value = f'{_value:,}'.replace(',', '.')
 
-            output += f"{_character.ljust(50)} | $ {value.rjust(6)}\n"
+            output += f'{_character.ljust(50)} | $ {value.rjust(6)}\n'
 
-        total_value: str = f"{_total_value:,}".replace(",", ".")
+        total_value: str = f'{_total_value:,}'.replace(',', '.')
 
-        output += f"\nValor total: $ {total_value}"
+        output += f'\nValor total: $ {total_value}'
         output = (
-            f"```\n{output}```\n"
-            f"### Clique no botão abaixo para confirmar e publicar os reembolsos"
+            f'```\n{output}```\n'
+            f'### Clique no botão abaixo para confirmar e publicar os reembolsos'
         )
 
         await interaction.response.send_message(content=output)
@@ -113,7 +115,7 @@ def setup_commands(bot: commands.Bot):
         )
 
     @apreensoes.command(
-        name="relatório", description="Cria uma imagem de relatório de apreensões"
+        name='relatório', description='Cria uma imagem de relatório de apreensões'
     )
     @app_commands.checks.has_any_role(*allowed_roles)
     @app_commands.describe(data_fim=f'Ex: {date.today().strftime('%d/%m/%y')}')
@@ -125,15 +127,16 @@ def setup_commands(bot: commands.Bot):
             lower_limit_date: datetime = _get_datetime_from_string(data_início)
         except (ValueError, TypeError, parser.ParserError) as e:
             await interaction.response.send_message(
-                content=f"Falha ao extrair data de `{data_início}` ou de `{data_fim}`, verifique e tente novamente"
+                content=f'Falha ao extrair data de `{data_início}` ou de `{data_fim}`, verifique e tente novamente'
             )
             print(e)
             return
-        awaiting_message: discord.InteractionMessage = (
-            await interaction.response.send_message(
-                content="Aguarde enquando o relatório é gerado..."
-            )
+
+        await interaction.response.send_message(
+            content='Aguarde enquando o relatório é gerado...'
         )
+
+        awating_message: discord.Message = await interaction.original_response()
 
         _valid_seizure_count: int = _get_valid_seizure_count(
             lower_limit_date=lower_limit_date, upper_limit_date=upper_limit_date
@@ -146,10 +149,11 @@ def setup_commands(bot: commands.Bot):
         )
 
         await interaction.channel.send(
-            content=f"Relatório gerado por {interaction.user.mention}", file=image_file
+            content=f'Relatório gerado por {interaction.user.mention}', file=image_file
         )
-        await awaiting_message.edit(
-            content="Relatório gerado! Apagando a mensagem...", delete_after=5
+
+        await awating_message.edit(
+            content='Relatório gerado! Apagando a mensagem...', delete_after=5
         )
 
     bot.tree.add_command(apreensoes)

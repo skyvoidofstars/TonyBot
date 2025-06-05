@@ -7,17 +7,17 @@ from datetime import datetime
 
 def setup_commands(bot: commands.Bot):
     history = discord.app_commands.Group(
-        name="histórico",
-        description="Comandos relacionados ao histórico de movimentações do baú",
+        name='histórico',
+        description='Comandos relacionados ao histórico de movimentações do baú',
     )
 
     @history.command(
-        name="usuário",
-        description="Mostra o histórico de movimentações do baú por usuário",
+        name='usuário',
+        description='Mostra o histórico de movimentações do baú por usuário',
     )
     @discord.app_commands.describe(
-        usuário="Usuário a ser consultado",
-        movimentações="Número de movimentações a serem mostradas (padrão: 10)",
+        usuário='Usuário a ser consultado',
+        movimentações='Número de movimentações a serem mostradas (padrão: 10)',
     )
     async def usuário(
         interaction: discord.Interaction,
@@ -46,40 +46,40 @@ def setup_commands(bot: commands.Bot):
 
         if not movements:
             await interaction.response.send_message(
-                f"Usuário `{usuário.name}` não possui movimentações registradas!",
+                f'Usuário `{usuário.name}` não possui movimentações registradas!',
                 ephemeral=True,
             )
             session.close()
             return
 
         summary = (
-            "  ID  |         Item        |  Qtd.  | Data e hora".ljust(embed_width)
-            + "\n"
+            '  ID  |         Item        |  Qtd.  | Data e hora'.ljust(embed_width)
+            + '\n'
         )
         for id, item, qty, timestamp, guild in movements:
             if guild == interaction.guild_id:
-                prefix = "+" if qty > 0 else "-"
-                summary += f"{prefix}{str(id).rjust(5)}| {item.ljust(20)[:20]}| {str(abs(qty)).rjust(7) if item != 'Dinheiro' else '$' + str(abs(qty)).rjust(6)}| {timestamp.strftime('%d/%m/%y %H:%M')}\n"
+                prefix = '+' if qty > 0 else '-'
+                summary += f'{prefix}{str(id).rjust(5)}| {item.ljust(20)[:20]}| {str(abs(qty)).rjust(7) if item != 'Dinheiro' else '$' + str(abs(qty)).rjust(6)}| {timestamp.strftime('%d/%m/%y %H:%M')}\n'
 
         embed = discord.Embed(
-            title=f"📃 Histórico de movimentações do baú de {usuário.name}",
+            title=f'📃 Histórico de movimentações do baú de {usuário.name}',
             color=discord.Color.blue(),
             timestamp=datetime.now(brasilia_tz),
         )
         embed.set_author(
             name=interaction.user.name, icon_url=interaction.user.display_avatar.url
         )
-        embed.add_field(name="", value=f"```diff\n{summary}\n```", inline=False)
+        embed.add_field(name='', value=f'```diff\n{summary}\n```', inline=False)
 
         await interaction.response.send_message(embed=embed)
         session.close()
 
     @history.command(
-        name="item", description="Mostra o histórico de movimentações do baú por item"
+        name='item', description='Mostra o histórico de movimentações do baú por item'
     )
     @discord.app_commands.describe(
-        item="Item a ser consultado",
-        movimentações="Número de movimentações a serem mostradas (padrão: 10)",
+        item='Item a ser consultado',
+        movimentações='Número de movimentações a serem mostradas (padrão: 10)',
     )
     async def item(
         interaction: discord.Interaction, item: str, movimentações: int = 10
@@ -89,7 +89,7 @@ def setup_commands(bot: commands.Bot):
 
         if not item:
             await interaction.response.send_message(
-                f"Item `{item}` não encontrado!", ephemeral=True
+                f'Item `{item}` não encontrado!', ephemeral=True
             )
             session.close()
             return
@@ -113,35 +113,35 @@ def setup_commands(bot: commands.Bot):
 
         if not movements:
             await interaction.response.send_message(
-                f"Item `{item.item_name}` não possui movimentações registradas!",
+                f'Item `{item.item_name}` não possui movimentações registradas!',
                 ephemeral=True,
             )
             session.close()
             return
 
         summary = (
-            "  ID  |        Usuário       |  Qtd.  | Data e hora".ljust(embed_width)
-            + "\n"
+            '  ID  |        Usuário       |  Qtd.  | Data e hora'.ljust(embed_width)
+            + '\n'
         )
         for id, user, qty, timestamp, guild in movements:
             if guild == interaction.guild_id:
-                prefix = "+" if qty > 0 else "-"
-                summary += f"{prefix}{str(id).rjust(5)}| {user.ljust(21)[:21]}| {str(abs(qty)).rjust(7) if item != 'Dinheiro' else '$' + str(abs(qty)).rjust(6)}| {timestamp.strftime('%d/%m/%y %H:%M')}\n"
+                prefix = '+' if qty > 0 else '-'
+                summary += f'{prefix}{str(id).rjust(5)}| {user.ljust(21)[:21]}| {str(abs(qty)).rjust(7) if item != 'Dinheiro' else '$' + str(abs(qty)).rjust(6)}| {timestamp.strftime('%d/%m/%y %H:%M')}\n'
 
         embed = discord.Embed(
-            title=f"📃 Histórico de movimentações do baú do item {item.item_name}",
+            title=f'📃 Histórico de movimentações do baú do item {item.item_name}',
             color=discord.Color.blue(),
             timestamp=datetime.now(brasilia_tz),
         )
         embed.set_author(
             name=interaction.user.name, icon_url=interaction.user.display_avatar.url
         )
-        embed.add_field(name="", value=f"```diff\n{summary}\n```", inline=False)
+        embed.add_field(name='', value=f'```diff\n{summary}\n```', inline=False)
 
         await interaction.response.send_message(embed=embed)
         session.close()
 
-    @item.autocomplete("item")
+    @item.autocomplete('item')
     async def autocomplete_item(interaction: discord.Interaction, current: str):
         session = _new_session()
         items = session.query(Item.item_name).distinct().order_by(Item.item_name).all()
@@ -156,8 +156,8 @@ def setup_commands(bot: commands.Bot):
         await interaction.response.autocomplete(choices)
 
     @history.command(
-        name="ajustes",
-        description="Mostra o histórico de movimentações do baú por item",
+        name='ajustes',
+        description='Mostra o histórico de movimentações do baú por item',
     )
     async def ajustes(interaction: discord.Interaction):
         session = _new_session()
@@ -176,38 +176,38 @@ def setup_commands(bot: commands.Bot):
 
         if not movements:
             await interaction.response.send_message(
-                f"Não há ajustes de estoque registrados!", ephemeral=True
+                f'Não há ajustes de estoque registrados!', ephemeral=True
             )
             session.close()
             return
 
         summary = (
-            "  ID  |       Item      |  Qtd.  |        Tipo       ".ljust(embed_width)[
+            '  ID  |       Item      |  Qtd.  |        Tipo       '.ljust(embed_width)[
                 :embed_width
             ]
-            + "\n"
+            + '\n'
         )
         for id, item, qty, observations in movements:
-            regex_type: str = "(?<=Tipo de ajuste=).*$"
+            regex_type: str = '(?<=Tipo de ajuste=).*$'
             adjustment_type = re.search(regex_type, observations)
 
-            prefix = "+" if qty > 0 else "-"
+            prefix = '+' if qty > 0 else '-'
             summary += (
-                f"{prefix}{str(id).rjust(5)}| {item.ljust(16)[:16]}| {str(abs(qty)).rjust(7) if item != 'Dinheiro' else '$' + str(abs(qty)).rjust(6)}| {adjustment_type.group() if adjustment_type else 'Sem descrição'}".ljust(
+                f'{prefix}{str(id).rjust(5)}| {item.ljust(16)[:16]}| {str(abs(qty)).rjust(7) if item != 'Dinheiro' else '$' + str(abs(qty)).rjust(6)}| {adjustment_type.group() if adjustment_type else 'Sem descrição'}'.ljust(
                     embed_width
                 )[:embed_width]
-                + "\n"
+                + '\n'
             )
 
         embed = discord.Embed(
-            title=f"📝 Histórico de ajustes de estoque",
+            title=f'📝 Histórico de ajustes de estoque',
             color=discord.Color.blue(),
             timestamp=datetime.now(brasilia_tz),
         )
         embed.set_author(
             name=interaction.user.name, icon_url=interaction.user.display_avatar.url
         )
-        embed.add_field(name="", value=f"```diff\n{summary}\n```", inline=False)
+        embed.add_field(name='', value=f'```diff\n{summary}\n```', inline=False)
 
         await interaction.response.send_message(embed=embed)
         session.close()

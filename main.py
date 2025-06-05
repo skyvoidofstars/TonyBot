@@ -6,7 +6,7 @@ from events import load_all_events
 
 load_dotenv()
 
-TOKEN = os.getenv("TOKEN")
+TOKEN = os.getenv('TOKEN')
 
 bot = NewBot()
 load_all_commands(bot)

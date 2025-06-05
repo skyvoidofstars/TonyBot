@@ -5,7 +5,7 @@ from utils.UserManager import has_user_admin_permission
 
 
 def setup_commands(bot: commands.Bot):
-    @bot.command(name="echo", description="Envia mensagem.")
+    @bot.command(name='echo', description='Envia mensagem.')
     async def echo(ctx: commands.Context, *, message: str):
         if not has_user_admin_permission(discord_uer=ctx.author):
             return

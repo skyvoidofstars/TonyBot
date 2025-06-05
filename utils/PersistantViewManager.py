@@ -9,7 +9,7 @@ from discord.ext import commands
 
 async def update_new_seizure_message(bot: commands.Bot):
     session: Session = _new_session()
-    view_key: str = "new_seizure_persistent_button"
+    view_key: str = 'new_seizure_persistent_button'
 
     persistent_message: PersistentMessage = (
         session.query(PersistentMessage).filter_by(view_key=view_key).first()
@@ -23,14 +23,14 @@ async def update_new_seizure_message(bot: commands.Bot):
             await message.delete()
         except discord.NotFound:
             print(
-                f"Mensagem persistente antiga ({persistent_message.message_id}) não encontrada. Será substituída."
+                f'Mensagem persistente antiga ({persistent_message.message_id}) não encontrada. Será substituída.'
             )
             session.close()
         except discord.HTTPException as e:
-            print(f"Erro ao apagar mensagem persistente antiga: {e}")
+            print(f'Erro ao apagar mensagem persistente antiga: {e}')
             session.close()
 
-    _content: str = "## Registre uma nova apreensão"
+    _content: str = '## Registre uma nova apreensão'
     new_message: discord.Message = await bot.get_channel(seizure_channel_id).send(
         content=_content, view=NewSeizureView(bot=bot)
     )
@@ -52,7 +52,7 @@ async def update_new_seizure_message(bot: commands.Bot):
 
 async def refresh_or_create_new_seizure(bot: commands.Bot):
     session: Session = _new_session()
-    view_key: str = "new_seizure_persistent_button"
+    view_key: str = 'new_seizure_persistent_button'
 
     persistent_message = (
         session.query(PersistentMessage).filter_by(view_key=view_key).first()
@@ -69,10 +69,10 @@ async def refresh_or_create_new_seizure(bot: commands.Bot):
             message_exists = True
         except discord.NotFound:
             print(
-                f"Mensagem persistente NewSeizureView (ID: {persistent_message.message_id}) não encontrada no Discord. Será recriada."
+                f'Mensagem persistente NewSeizureView (ID: {persistent_message.message_id}) não encontrada no Discord. Será recriada.'
             )
         except discord.HTTPException as e:
-            print(f"Erro ao buscar mensagem persistente: {e}")
+            print(f'Erro ao buscar mensagem persistente: {e}')
 
     if not message_exists:
         await update_new_seizure_message(bot)

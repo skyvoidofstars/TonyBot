@@ -8,21 +8,21 @@ from datetime import datetime
 
 
 def setup_commands(bot: commands.Bot):
-    @bot.tree.command(name="remover_registro", description="Remove um registro do baú")
+    @bot.tree.command(name='remover_registro', description='Remove um registro do baú')
     @discord.app_commands.checks.has_any_role(*allowed_roles)
-    @discord.app_commands.describe(id="ID do registro a ser removido")
+    @discord.app_commands.describe(id='ID do registro a ser removido')
     async def remover_registro(interaction: discord.Interaction, id: int):
         session: Session = _new_session()
         chest: Chest = session.query(Chest).filter_by(chest_id=id).first()
 
         if not chest:
             await interaction.response.send_message(
-                f"ID `{id}` não encontrado!", ephemeral=True
+                f'ID `{id}` não encontrado!', ephemeral=True
             )
             return
 
         embed: discord.Embed = discord.Embed(
-            title="❌ Confirmação de remoção!",
+            title='❌ Confirmação de remoção!',
             color=discord.Color.red(),
             timestamp=datetime.now(brasilia_tz),
         )
@@ -31,16 +31,16 @@ def setup_commands(bot: commands.Bot):
             name=interaction.user.name, icon_url=interaction.user.display_avatar.url
         )
         embed.add_field(
-            name="👤 Funcionário",
-            value=f"```\n{chest.user.user_character_name.ljust(embed_width)}\n```",
+            name='👤 Funcionário',
+            value=f'```\n{chest.user.user_character_name.ljust(embed_width)}\n```',
             inline=False,
         )
         embed.add_field(
-            name="📦 Item", value=f"```\n{chest.item.item_name}\n```", inline=True
+            name='📦 Item', value=f'```\n{chest.item.item_name}\n```', inline=True
         )
         embed.add_field(
-            name="🔢 Quantidade",
-            value=f"```\n{chest.quantity if chest.item.item_name != 'Dinheiro' else '$ ' + str(chest.quantity)}\n```",
+            name='🔢 Quantidade',
+            value=f'```\n{chest.quantity if chest.item.item_name != 'Dinheiro' else '$ ' + str(chest.quantity)}\n```',
             inline=True,
         )
 

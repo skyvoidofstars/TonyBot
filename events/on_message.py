@@ -22,7 +22,7 @@ def setup_events(bot: commands.Bot):
                 user: User = get_or_create_user(discord_user=message.author)
                 seizure: Seizure | None = (
                     session.query(Seizure)
-                    .filter_by(user_id=user.user_id, status="PENDENTE")
+                    .filter_by(user_id=user.user_id, status='PENDENTE')
                     .order_by(desc(Seizure.created_at))
                     .first()
                 )

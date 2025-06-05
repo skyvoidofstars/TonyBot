@@ -6,10 +6,10 @@ from config import brasilia_tz, allowed_roles
 
 
 def _extract_character_name(display_name: str) -> str:
-    match: regex.Match = regex.match(r"^([\p{L}\s]+\p{L})", display_name)
+    match: regex.Match = regex.match(r'^([\p{L}\s]+\p{L})', display_name)
     if match:
         return match.group(1)
-    return display_name.split("|")[0].strip()
+    return display_name.split('|')[0].strip()
 
 
 def get_or_create_user(discord_user: discord.User) -> User:

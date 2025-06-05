@@ -7,7 +7,7 @@ from datetime import datetime
 
 
 def setup_commands(bot: commands.Bot):
-    @bot.tree.command(name="inventário", description="Mostra o inventário do baú")
+    @bot.tree.command(name='inventário', description='Mostra o inventário do baú')
     async def inventário(interaction: discord.Interaction):
         session = _new_session()
         items = (
@@ -22,16 +22,16 @@ def setup_commands(bot: commands.Bot):
         groups = list(set(item[1] for item in items if item[1]))
         groups.sort()
 
-        summary = ""
+        summary = ''
         for group_name in groups:
-            summary += f"#{group_name.ljust(30)}| Quantidade".ljust(embed_width) + "\n"
+            summary += f'#{group_name.ljust(30)}| Quantidade'.ljust(embed_width) + '\n'
             for item, group, qty in items:
                 if group == group_name:
-                    summary += f" {item.ljust(30)[:30]}| {'$' + str(qty).rjust(11) if item == 'Dinheiro' else str(qty).rjust(12)}\n"
-            summary += "\n"
+                    summary += f' {item.ljust(30)[:30]}| {'$' + str(qty).rjust(11) if item == 'Dinheiro' else str(qty).rjust(12)}\n'
+            summary += '\n'
 
         embed = discord.Embed(
-            title="📦 Inventário do baú",
+            title='📦 Inventário do baú',
             color=discord.Color.blue(),
             timestamp=datetime.now(brasilia_tz),
         )
@@ -39,7 +39,7 @@ def setup_commands(bot: commands.Bot):
         embed.set_author(
             name=interaction.user.name, icon_url=interaction.user.display_avatar.url
         )
-        embed.add_field(name="", value=f"```md\n{summary}\n```", inline=False)
+        embed.add_field(name='', value=f'```md\n{summary}\n```', inline=False)
 
         await interaction.response.send_message(embed=embed)
 

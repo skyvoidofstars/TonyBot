@@ -25,19 +25,19 @@ def setup_events(bot: commands.Bot):
 
         syncs = await bot.tree.sync()
         print(
-            f'{datetime.now().strftime("%Y-%m-%d %H:%M:%S")} {len(syncs)} comandos sincronizados\n'
-            f'{datetime.now().strftime("%Y-%m-%d %H:%M:%S")} Bot conectado como {bot.user} em {len(bot.guilds)} servidor{'es' if len(bot.guilds) > 1 else ''}!'
+            f'{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} {len(syncs)} comandos sincronizados\n'
+            f'{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} Bot conectado como {bot.user} em {len(bot.guilds)} servidor{'es' if len(bot.guilds) > 1 else ''}!'
         )
 
         commit_hash, commit_msg, commit_summary = get_latest_commit_info()
         message_content: str = (
-            f'Bot (re)inicializado às {datetime.now().strftime("%H:%M:%S")}\n'
-            f"{len(syncs)} comandos sincronizados\n\n"
-            f"Último commit: `{commit_hash}`.\n"
+            f'Bot (re)inicializado às {datetime.now().strftime('%H:%M:%S')}\n'
+            f'{len(syncs)} comandos sincronizados\n\n'
+            f'Último commit: `{commit_hash}`.\n'
             f'## {commit_msg.split('\n', 1)[0]}\n'
-            f'{commit_msg.split('\n', 1)[1] if len(commit_msg.split('\n', 1)) > 1 else ""}\n'
-            f"{commit_summary}\n"
-            f"||<@{MentionID}>||"
+            f'{commit_msg.split('\n', 1)[1] if len(commit_msg.split('\n', 1)) > 1 else ''}\n'
+            f'{commit_summary}\n'
+            f'||<@{MentionID}>||'
         )
         
         await bot.get_channel(LogChannel).send(message_content)

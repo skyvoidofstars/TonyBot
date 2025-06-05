@@ -8,20 +8,20 @@ from datetime import datetime
 
 def setup_commands(bot: commands.Bot):
     @bot.tree.command(
-        name="ajustar_estoque", description="Ajusta o estoque de um item no baú"
+        name='ajustar_estoque', description='Ajusta o estoque de um item no baú'
     )
     @discord.app_commands.describe(
-        item="Item a ser ajustado",
-        quantidade="Quantidade real em estoque",
-        tipo_de_ajuste="Tipo de ajuste (padrão: Diferença de estoque)",
+        item='Item a ser ajustado',
+        quantidade='Quantidade real em estoque',
+        tipo_de_ajuste='Tipo de ajuste (padrão: Diferença de estoque)',
     )
     @discord.app_commands.choices(
         tipo_de_ajuste=[
             discord.app_commands.Choice(
-                name="Validade ultrapassada", value="Validade ultrapassada"
+                name='Validade ultrapassada', value='Validade ultrapassada'
             ),
             discord.app_commands.Choice(
-                name="Diferença de estoque", value="Diferença de estoque"
+                name='Diferença de estoque', value='Diferença de estoque'
             ),
         ]
     )
@@ -30,7 +30,7 @@ def setup_commands(bot: commands.Bot):
         interaction: discord.Interaction,
         item: str,
         quantidade: int,
-        tipo_de_ajuste: str = "Diferença de estoque",
+        tipo_de_ajuste: str = 'Diferença de estoque',
     ):
         await interaction.response.defer()
         session = _new_session()
@@ -39,7 +39,7 @@ def setup_commands(bot: commands.Bot):
         AdjustmentType = tipo_de_ajuste if tipo_de_ajuste else None
         if not ThisItem or not user:
             await interaction.followup.send(
-                f"Item `{ThisItem.item_name}` ou usuário não cadastrado!"
+                f'Item `{ThisItem.item_name}` ou usuário não cadastrado!'
             )
             session.close()
             return
@@ -58,8 +58,8 @@ def setup_commands(bot: commands.Bot):
             me = User(
                 user_id=bot.user.id,
                 username=bot.user.name,
-                user_display_name="Tony, o Mecânico",
-                user_character_name="Tony, o Mecânico",
+                user_display_name='Tony, o Mecânico',
+                user_character_name='Tony, o Mecânico',
                 created_at=datetime.now(brasilia_tz),
             )
             session.add(me)
@@ -70,54 +70,54 @@ def setup_commands(bot: commands.Bot):
             guild_id=interaction.guild_id,
             item_id=ThisItem.item_id,
             quantity=StockDiff,
-            observations=f"Ajuste de estoque feito por {user.user_character_name};Tipo de ajuste={AdjustmentType}",
+            observations=f'Ajuste de estoque feito por {user.user_character_name};Tipo de ajuste={AdjustmentType}',
             created_at=datetime.now(brasilia_tz),
         )
         session.add(Inventory)
         session.commit()
 
         embed = discord.Embed(
-            title="Ajuste de Estoque",
+            title='Ajuste de Estoque',
             color=discord.Color.orange(),
             timestamp=datetime.now(brasilia_tz),
         )
 
-        DiffPrefix = "+" if StockDiff >= 0 else "-"
-        StockDiff = f"{abs(StockDiff)}"
-        Quantity = f"{str(quantidade)}"
+        DiffPrefix = '+' if StockDiff >= 0 else '-'
+        StockDiff = f'{abs(StockDiff)}'
+        Quantity = f'{str(quantidade)}'
 
-        if item == "Dinheiro":
-            StockQty = f"$ {str(StockQty)}"
-            Quantity = f"$ {str(quantidade)}"
-            StockDiff = f"$ {str(StockDiff)}"
+        if item == 'Dinheiro':
+            StockQty = f'$ {str(StockQty)}'
+            Quantity = f'$ {str(quantidade)}'
+            StockDiff = f'$ {str(StockDiff)}'
 
         embed.set_author(
             name=interaction.user.display_name, icon_url=interaction.user.avatar.url
         )
 
         embed.add_field(
-            name="👤 Funcionário",
-            value=f"```\n{user.user_character_name.ljust(embed_width)}\n```",
+            name='👤 Funcionário',
+            value=f'```\n{user.user_character_name.ljust(embed_width)}\n```',
             inline=False,
         )
         embed.add_field(
-            name="📦 Item", value=f"```\n{ThisItem.item_name}\n```", inline=True
+            name='📦 Item', value=f'```\n{ThisItem.item_name}\n```', inline=True
         )
         embed.add_field(
-            name="🔢 Estoque Antigo", value=f"```\n{StockQty}\n```", inline=True
+            name='🔢 Estoque Antigo', value=f'```\n{StockQty}\n```', inline=True
         )
         embed.add_field(
-            name="🏷️ Estoque Novo", value=f"```\n{Quantity}\n```", inline=True
+            name='🏷️ Estoque Novo', value=f'```\n{Quantity}\n```', inline=True
         )
         embed.add_field(
-            name="📈 Diferença",
-            value=f"```diff\n{DiffPrefix} {StockDiff}\n```",
+            name='📈 Diferença',
+            value=f'```diff\n{DiffPrefix} {StockDiff}\n```',
             inline=True,
         )
         embed.add_field(
-            name="⚠️ Tipo de Ajuste", value=f"```\n{AdjustmentType}\n```", inline=True
+            name='⚠️ Tipo de Ajuste', value=f'```\n{AdjustmentType}\n```', inline=True
         )
-        embed.set_footer(text=f"ID da movimentação: {Inventory.chest_id}")
+        embed.set_footer(text=f'ID da movimentação: {Inventory.chest_id}')
 
         msg = await interaction.followup.send(embed=embed)
 
@@ -128,7 +128,7 @@ def setup_commands(bot: commands.Bot):
 
         session.close()
 
-    @ajustar_estoque.autocomplete("item")
+    @ajustar_estoque.autocomplete('item')
     async def autocomplete_item(interaction: discord.Interaction, current: str):
         session = _new_session()
         items = session.query(Item.item_name).distinct().order_by(Item.item_name).all()

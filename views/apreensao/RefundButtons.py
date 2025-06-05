@@ -1,3 +1,4 @@
+import textwrap
 import discord, regex
 from discord import ui
 from discord.ext import commands
@@ -5,15 +6,15 @@ from datetime import datetime
 from dateutil import parser
 from sqlalchemy import func
 from sqlalchemy.orm import Session
-from db import User, Seizure, SeizureRefund, _new_session
+from db import Chest, Item,  Seizure, SeizureRefund, _new_session
 from utils.UserManager import get_or_create_user
 from utils.ErrorReporting import log_and_notify
 from views.apreensao.functions import new_refund_message_content
-from config import brasilia_tz, seizure_value, refund_channel_id
+from config import brasilia_tz, seizure_value, embed_width, ChestAllowedChannels
 
 
 def _get_refund_id(interaction: discord.Interaction) -> int:
-    _pattern: str = r"[0-9]+"
+    _pattern: str = r'[0-9]+'
     _string: str = interaction.message.embeds[0].footer.text
     _match_str: str = regex.search(pattern=_pattern, string=_string).group(0)
     _refund_id: int = int(_match_str.strip())
@@ -28,7 +29,7 @@ def _add_refund_confirmation(user: discord.User, refund_id: int) -> bool:
         .filter(
             Seizure.user_id == user.id,
             Seizure.refund_id == refund_id,
-            Seizure.status == "REEMBOLSADO",
+            Seizure.status == 'REEMBOLSADO',
         )
         .all()
     )
@@ -37,7 +38,7 @@ def _add_refund_confirmation(user: discord.User, refund_id: int) -> bool:
         return False
 
     for _seizure in _user_seizure_list:
-        _seizure.status = "RESGATADO"
+        _seizure.status = 'RESGATADO'
         _seizure.redeemed_at = datetime.now(brasilia_tz)
     _session.commit()
     _session.close()
@@ -60,7 +61,7 @@ def _update_refund_redeemed_value(refund_id: int):
     _redeemed_value: int = (
         _session.query(
             (func.count(Seizure.redeemed_at) * seizure_value).label(
-                "redeemed_total_value"
+                'redeemed_total_value'
             )
         )
         .filter(Seizure.refund_id == refund_id)
@@ -77,7 +78,7 @@ def _update_refund_redeemed_value(refund_id: int):
         _session.commit()
     except Exception as e:
         _session.rollback()
-        print(f"Erro ao atualizar valor resgatado do reembolso de ID: {refund_id}")
+        print(f'Erro ao atualizar valor resgatado do reembolso de ID: {refund_id}')
     finally:
         _session.close()
 
@@ -96,12 +97,12 @@ class RefundButtonsView(ui.View):
     def __init__(self, bot: commands.Bot):
         super().__init__(timeout=None)
         self.bot = bot
-        self.custom_id = f"confirm_refund_persistant_view"
+        self.custom_id = f'confirm_refund_persistant_view'
 
     @ui.button(
-        label="Confirmar recebimento",
+        label='Confirmar recebimento',
         style=discord.ButtonStyle.success,
-        custom_id="confirm_refund_button",
+        custom_id='confirm_refund_button',
     )
     async def confirmar_recebimento(
         self, interaction: discord.Interaction, button: ui.Button
@@ -110,7 +111,7 @@ class RefundButtonsView(ui.View):
             refund_id: int = _get_refund_id(interaction=interaction)
         except Exception as e:
             await interaction.response.send_message(
-                content="Erro ao obter o ID do reembolso.", ephemeral=True
+                content='Erro ao obter o ID do reembolso.', ephemeral=True
             )
             return
 
@@ -119,7 +120,7 @@ class RefundButtonsView(ui.View):
         )
         if not is_refund_confirmed:
             await interaction.response.send_message(
-                content="Você não está na lista ou já resgatou os valores",
+                content='Você não está na lista ou já resgatou os valores',
                 ephemeral=True,
             )
             return
@@ -129,7 +130,7 @@ class RefundButtonsView(ui.View):
         session: Session = _new_session()
         pendents_count: int = (
             session.query(func.count(Seizure.user_id))
-            .filter(Seizure.status == "REEMBOLSADO", Seizure.refund_id == refund_id)
+            .filter(Seizure.status == 'REEMBOLSADO', Seizure.refund_id == refund_id)
             .scalar()
         )
 
@@ -144,21 +145,21 @@ class RefundButtonsView(ui.View):
         if pendents_count > 0:
             await interaction.message.edit(content=message_content, embed=message_embed)
             await interaction.response.send_message(
-                content="Recebimento confirmado!", ephemeral=True, delete_after=3
+                content='Recebimento confirmado!', ephemeral=True, delete_after=3
             )
         else:
             message_embed.color = discord.Color.red()
             message_embed.set_field_at(
                 index=2,
-                name="Reembolso finalizado",
-                value=f"Todos os funcionários resgataram seus valores <t:{int(datetime.now().timestamp())}:R>",
+                name='Reembolso finalizado',
+                value=f'Todos os funcionários resgataram seus valores <t:{int(datetime.now().timestamp())}:R>',
                 inline=False,
             )
             await interaction.message.edit(
                 content=message_content, embed=message_embed, view=None
             )
             await interaction.response.send_message(
-                content="Recebimento confirmado!", ephemeral=True, delete_after=3
+                content='Recebimento confirmado!', ephemeral=True, delete_after=3
             )
 
             refund: SeizureRefund = (
@@ -167,23 +168,23 @@ class RefundButtonsView(ui.View):
                 .first()
             )
 
-            refund.status = "FINALIZADO"
+            refund.status = 'FINALIZADO'
             refund.finished_at = datetime.now(brasilia_tz)
             try:
                 session.commit()
             except Exception as e:
                 session.rollback()
                 await interaction.response.send_message(
-                    content="Erro ao finalizar o reembolso.", ephemeral=True
+                    content='Erro ao finalizar o reembolso.', ephemeral=True
                 )
             self.stop()
 
         session.close()
 
     @ui.button(
-        label="Finalizar pagamentos",
+        label='Finalizar pagamentos',
         style=discord.ButtonStyle.danger,
-        custom_id="finish_payments_button",
+        custom_id='finish_payments_button',
     )
     async def sup_finalizar_pagamento(
         self, interaction: discord.Interaction, button: ui.Button
@@ -192,7 +193,7 @@ class RefundButtonsView(ui.View):
             refund_id: int = _get_refund_id(interaction=interaction)
         except Exception as e:
             await interaction.response.send_message(
-                content="Erro ao obter o ID do reembolso.", ephemeral=True
+                content='Erro ao obter o ID do reembolso.', ephemeral=True
             )
             return
 
@@ -206,7 +207,7 @@ class RefundButtonsView(ui.View):
             .first()
         )
 
-        refund.status = "FINALIZADO"
+        refund.status = 'FINALIZADO'
         refund.finished_by = user.user_id
         refund.finished_at = datetime.now(brasilia_tz)
 
@@ -215,15 +216,76 @@ class RefundButtonsView(ui.View):
         except Exception as e:
             session.rollback()
             await interaction.response.send_message(
-                content="Erro ao finalizar o reembolso.", ephemeral=True
+                content='Erro ao finalizar o reembolso.', ephemeral=True
             )
-            return
-        finally:
             session.close()
+            return
+        
+        cash_item: Item = (
+            session.query(Item)
+            .filter(Item.item_name == 'Dinheiro')
+            .scalar()
+        )
+        chest: Chest = Chest(
+            user_id = self.bot.user.id,
+            guild_id = interaction.guild.id,
+            item_id = cash_item.item_id,
+            quantity = refund.total_value - (refund.redeemed_value or 0),
+            observations = f'Dinheiro retido do reembolso ID {refund.refund_id}',
+            created_at = datetime.now()
+        )
+        
+        session.add(chest)
+        session.commit()
+        session.refresh(chest)
+        
+        StockQty: int = (
+            session.query(func.sum(Chest.quantity))
+            .filter_by(item_id=cash_item.item_id, guild_id=interaction.guild.id)
+            .scalar()
+            or 0
+        )
+        
+        embed: discord.Embed = discord.Embed(
+            title='Depósito de reembolsos',
+            color=discord.Color.green(),
+            timestamp=datetime.now(brasilia_tz),
+        )
 
+        embed.set_author(
+            name=interaction.user.name, icon_url=interaction.user.display_avatar.url
+        )
+
+        embed.add_field(
+            name='👤 Funcionário',
+            value=f'```\n{user.user_character_name.ljust(embed_width)}\n```',
+            inline=False,
+        )
+        embed.add_field(
+            name='📦 Item', value=f'```\n{cash_item.item_name}\n```', inline=True
+        )
+        embed.add_field(
+            name='🔢 Quantidade', value=f'```\n$ {chest.quantity}\n```', inline=True
+        )
+        embed.add_field(name='🏷️ Em estoque', value=f'```\n$ {StockQty}\n```', inline=True)
+        if chest.observations:
+            embed.add_field(
+                name='📝 Observações',
+                value=f'```\n{'\n'.join(textwrap.wrap(chest.observations, width=embed_width))}\n```',
+                inline=False,
+            )
+
+        embed.set_footer(text=f'ID da movimentação: {chest.chest_id}')
+
+        msg: discord.Message = await interaction.guild.get_channel(ChestAllowedChannels[0]).send(embed=embed)
+
+        chest.message_id = msg.id
+        chest.channel_id = msg.channel.id
+        session.commit()
+        session.close()
+        
         upper_limit_date: datetime = _get_upper_limit_date(interaction=interaction)
 
-        finishing_message: str
         finishing_embed: discord.Embed
         finishing_message, finishing_embed = await new_refund_message_content(
             bot=self.bot,
@@ -231,17 +293,17 @@ class RefundButtonsView(ui.View):
             upper_limit_date=upper_limit_date,
             refund_finishing=True,
         )
-
+        
         finishing_embed.set_field_at(
             index=2,
-            name="Não é mais possível confirmar retiradas",
-            value=f"Reembolso finalizado por {interaction.user.mention} <t:{int(datetime.now().timestamp())}:R>\n"
-            "O valor restante foi depositado no baú!",
+            name='Não é mais possível confirmar retiradas',
+            value=f'Reembolso finalizado por {interaction.user.mention} <t:{int(datetime.now().timestamp())}:R>\n'
+            f'O valor restante foi depositado no baú! ({msg.jump_url})',
             inline=False,
         )
 
         await interaction.message.edit(
-            content=finishing_message, embed=finishing_embed, view=None
+            embed=finishing_embed, view=None
         )
         self.stop()
 

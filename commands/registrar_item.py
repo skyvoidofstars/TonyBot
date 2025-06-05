@@ -9,12 +9,12 @@ from utils.UserManager import get_or_create_user
 
 
 def setup_commands(bot: commands.Bot):
-    @bot.tree.command(name="registrar_item", description="Registra um item no sistema")
+    @bot.tree.command(name='registrar_item', description='Registra um item no sistema')
     @discord.app_commands.checks.has_any_role(*allowed_roles)
     @discord.app_commands.describe(
-        item="Nome do item a ser registrado",
-        categoria="Categoria do item a ser registrado",
-        descrição="Descrição do item a ser registrado",
+        item='Nome do item a ser registrado',
+        categoria='Categoria do item a ser registrado',
+        descrição='Descrição do item a ser registrado',
     )
     async def registrar_item(
         interaction: discord.Interaction,
@@ -33,7 +33,7 @@ def setup_commands(bot: commands.Bot):
             .first()
         ):
             await interaction.followup.send(
-                f"Item `{item}` já está cadastrado!", ephemeral=True
+                f'Item `{item}` já está cadastrado!', ephemeral=True
             )
             session.close()
             return
@@ -51,11 +51,11 @@ def setup_commands(bot: commands.Bot):
         session.close()
 
         print(
-            f'{datetime.now().strftime("%Y-%m-%d %H:%M:%S")} Item `{item}` registrado por {user.user_character_name} ({user.user_id})'
+            f'{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} Item `{item}` registrado por {user.user_character_name} ({user.user_id})'
         )
 
         embed: discord.Embed = discord.Embed(
-            title="Item registrado com sucesso!",
+            title='Item registrado com sucesso!',
             color=discord.Color.green(),
             timestamp=datetime.now(brasilia_tz),
         )
@@ -64,23 +64,23 @@ def setup_commands(bot: commands.Bot):
         )
 
         embed.add_field(
-            name="👤 Funcionário",
-            value=f"```\n{user.user_character_name.ljust(embed_width)}\n```",
+            name='👤 Funcionário',
+            value=f'```\n{user.user_character_name.ljust(embed_width)}\n```',
             inline=False,
         )
-        embed.add_field(name="📦 Item", value=f"```\n{item}\n```", inline=True)
-        embed.add_field(name="🏷️ Categoria", value=f"```\n{categoria}\n```", inline=True)
+        embed.add_field(name='📦 Item', value=f'```\n{item}\n```', inline=True)
+        embed.add_field(name='🏷️ Categoria', value=f'```\n{categoria}\n```', inline=True)
         embed.add_field(
-            name="📝 Descrição",
-            value=f"```\n{descrição if descrição else 'Sem descrição'}\n```",
+            name='📝 Descrição',
+            value=f'```\n{descrição if descrição else 'Sem descrição'}\n```',
             inline=False,
         )
 
-        embed.set_footer(text=f"ID do item: {NewItem.item_id}")
+        embed.set_footer(text=f'ID do item: {NewItem.item_id}')
 
         await interaction.followup.send(embed=embed)
 
-    @registrar_item.autocomplete("categoria")
+    @registrar_item.autocomplete('categoria')
     async def autocomplete_categoria(interaction: discord.Interaction, current: str):
         session: Session = _new_session()
         categorias: Item = (

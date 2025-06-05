@@ -6,6 +6,7 @@ from sqlalchemy import func
 from sqlalchemy.orm import Session
 from datetime import datetime
 from utils.UserManager import get_or_create_user
+from views.bau.UndoRecord import UndoRecordView
 
 
 async def _is_valid_channel(
@@ -19,11 +20,11 @@ async def _is_valid_channel(
         )
         if AllowedChannel:
             await interaction.followup.send(
-                f"Esse comando só pode ser usado em {bot.get_channel(AllowedChannel).mention}!"
+                f'Esse comando só pode ser usado em {bot.get_channel(AllowedChannel).mention}!'
             )
         else:
             await interaction.followup.send(
-                "Nenhum canal permitido configurado para esse servidor!"
+                'Nenhum canal permitido configurado para esse servidor!'
             )
         return False
     return True
@@ -31,14 +32,14 @@ async def _is_valid_channel(
 
 def setup_commands(bot: commands.Bot):
     bau: discord.app_commands.Group = discord.app_commands.Group(
-        name="baú", description="Realiza movimentações no baú"
+        name='baú', description='Realiza movimentações no baú'
     )
 
-    @bau.command(name="adicionar", description="Adiciona um item ao baú")
+    @bau.command(name='adicionar', description='Adiciona um item ao baú')
     @discord.app_commands.describe(
-        item="Nome do item a ser adicionado.",
-        quantidade="Quantidade do item (deve ser maior que zero).",
-        observação="Alguma observação para esta transação?",
+        item='Nome do item a ser adicionado.',
+        quantidade='Quantidade do item (deve ser maior que zero).',
+        observação='Alguma observação para esta transação?',
     )
     async def adicionar(
         interaction: discord.Interaction,
@@ -58,7 +59,7 @@ def setup_commands(bot: commands.Bot):
 
         if not ThisItem or quantidade == 0:
             await interaction.followup.send(
-                f"Item `{item}` não está cadastrado ou quantidade não é válida!"
+                f'Item `{item}` não está cadastrado ou quantidade não é válida!'
             )
             session.close()
             return
@@ -84,48 +85,54 @@ def setup_commands(bot: commands.Bot):
             .filter_by(item_id=ThisItem.item_id, guild_id=interaction.guild.id)
             .scalar()
         )
-        if item == "Dinheiro":
-            Quantity: str = f"$ {str(quantidade)}"
-            StockQty: str = f"$ {str(StockQty)}"
+        if item == 'Dinheiro':
+            Quantity: str = f'$ {str(quantidade)}'
+            StockQty: str = f'$ {str(StockQty)}'
 
-        embed: discord.Embed = discord.Embed(
-            title="Reposição de baú",
+        chest_embed: discord.Embed = discord.Embed(
+            title='Reposição de baú',
             color=discord.Color.green(),
             timestamp=datetime.now(brasilia_tz),
         )
 
-        embed.set_author(
+        chest_embed.set_author(
             name=interaction.user.name, icon_url=interaction.user.display_avatar.url
         )
 
-        embed.add_field(
-            name="👤 Funcionário",
-            value=f"```\n{user.user_character_name.ljust(embed_width)}\n```",
+        chest_embed.add_field(
+            name='👤 Funcionário',
+            value=f'```\n{user.user_character_name.ljust(embed_width)}\n```',
             inline=False,
         )
-        embed.add_field(
-            name="📦 Item", value=f"```\n{ThisItem.item_name}\n```", inline=True
+        chest_embed.add_field(
+            name='📦 Item', value=f'```\n{ThisItem.item_name}\n```', inline=True
         )
-        embed.add_field(
-            name="🔢 Quantidade", value=f"```\n{Quantity}\n```", inline=True
+        chest_embed.add_field(
+            name='🔢 Quantidade', value=f'```\n{Quantity}\n```', inline=True
         )
-        embed.add_field(name="🏷️ Em estoque", value=f"```\n{StockQty}\n```", inline=True)
+        chest_embed.add_field(name='🏷️ Em estoque', value=f'```\n{StockQty}\n```', inline=True)
         if observação:
-            embed.add_field(
-                name="📝 Observações",
+            chest_embed.add_field(
+                name='📝 Observações',
                 value=f'```\n{'\n'.join(textwrap.wrap(observação, width=embed_width))}\n```',
                 inline=False,
             )
 
-        embed.set_footer(text=f"ID da movimentação: {chest.chest_id}")
+        chest_embed.set_footer(text=f'ID da movimentação: {chest.chest_id}')
 
         msg: discord.Message = await interaction.followup.send(embed=embed)
+
         chest.message_id = msg.id
         chest.channel_id = msg.channel.id
         session.commit()
+
+        await msg.edit(
+            embed=embed, view=UndoRecordView(bot=bot, chest_id=chest.chest_id)
+        )
+
         session.close()
 
-    @adicionar.autocomplete("item")
+    @adicionar.autocomplete('item')
     async def autocomplete_adicionar(interaction: discord.Interaction, current: str):
         session: Session = _new_session()
         items: list = (
@@ -141,11 +148,11 @@ def setup_commands(bot: commands.Bot):
 
         await interaction.response.autocomplete(choices)
 
-    @bau.command(name="retirar", description="Retirar um item do baú")
+    @bau.command(name='retirar', description='Retirar um item do baú')
     @discord.app_commands.describe(
-        item="Nome do item a ser retirado.",
-        quantidade="Quantidade do item (deve ser maior que zero).",
-        observação="Alguma observação para esta transação?",
+        item='Nome do item a ser retirado.',
+        quantidade='Quantidade do item (deve ser maior que zero).',
+        observação='Alguma observação para esta transação?',
     )
     async def retirar(
         interaction: discord.Interaction,
@@ -165,7 +172,7 @@ def setup_commands(bot: commands.Bot):
 
         if not ThisItem or quantidade == 0:
             await interaction.followup.send(
-                f"Item `{item}` não está cadastrado ou quantidade não é válida!"
+                f'Item `{item}` não está cadastrado ou quantidade não é válida!'
             )
             session.close()
             return
@@ -179,7 +186,7 @@ def setup_commands(bot: commands.Bot):
         quantidade = abs(quantidade)
         if quantidade > StockQty:
             await interaction.followup.send(
-                f"Item `{item}` está com o estoque zerado ou a quantidade é maior que a do estoque!\n\nEstoque: {StockQty}\nQuantidade escolhida: {abs(quantidade)}"
+                f'Item `{item}` está com o estoque zerado ou a quantidade é maior que a do estoque!\n\nEstoque: {StockQty}\nQuantidade escolhida: {abs(quantidade)}'
             )
             session.close()
             return
@@ -204,12 +211,12 @@ def setup_commands(bot: commands.Bot):
             .filter_by(item_id=ThisItem.item_id, guild_id=interaction.guild.id)
             .scalar()
         )
-        if item == "Dinheiro":
-            Quantity: str = f"$ {str(quantidade)}"
-            StockQty: str = f"$ {str(StockQty)}"
+        if item == 'Dinheiro':
+            Quantity: str = f'$ {str(quantidade)}'
+            StockQty: str = f'$ {str(StockQty)}'
 
         embed: discord.Embed = discord.Embed(
-            title="Retirada do baú",
+            title='Retirada do baú',
             color=discord.Color.dark_red(),
             timestamp=datetime.now(brasilia_tz),
         )
@@ -219,33 +226,38 @@ def setup_commands(bot: commands.Bot):
         )
 
         embed.add_field(
-            name="👤 Funcionário",
-            value=f"```\n{user.user_character_name.ljust(embed_width)}\n```",
+            name='👤 Funcionário',
+            value=f'```\n{user.user_character_name.ljust(embed_width)}\n```',
             inline=False,
         )
         embed.add_field(
-            name="📦 Item", value=f"```\n{ThisItem.item_name}\n```", inline=True
+            name='📦 Item', value=f'```\n{ThisItem.item_name}\n```', inline=True
         )
         embed.add_field(
-            name="🔢 Quantidade", value=f"```\n{Quantity}\n```", inline=True
+            name='🔢 Quantidade', value=f'```\n{Quantity}\n```', inline=True
         )
-        embed.add_field(name="🏷️ Em estoque", value=f"```\n{StockQty}\n```", inline=True)
+        embed.add_field(name='🏷️ Em estoque', value=f'```\n{StockQty}\n```', inline=True)
         if observação:
             embed.add_field(
-                name="📝 Observações",
+                name='📝 Observações',
                 value=f'```\n{'\n'.join(textwrap.wrap(observação, width=embed_width))}\n```',
                 inline=False,
             )
 
-        embed.set_footer(text=f"ID da movimentação: {chest.chest_id}")
+        embed.set_footer(text=f'ID da movimentação: {chest.chest_id}')
 
         msg: discord.Message = await interaction.followup.send(embed=embed)
+
         chest.message_id = msg.id
         chest.channel_id = msg.channel.id
         session.commit()
+
+        await msg.edit(
+            embed=embed, view=UndoRecordView(bot=bot, chest_id=chest.chest_id)
+        )
         session.close()
 
-    @retirar.autocomplete("item")
+    @retirar.autocomplete('item')
     async def autocomplete_retirar(interaction: discord.Interaction, current: str):
         session: Session = _new_session()
         items: list = (
