@@ -53,21 +53,19 @@ def get_latest_commit_info(repo_path='.') -> tuple[str, str, str]:
         if len(display_path_str) > path_display_width:
             formatted_display_path = '...' + display_path_str[-(path_display_width-3):]
         else:
-            formatted_display_path = display_path_str.ljust(path_display_width)        
-
-        match d_item.change_type:
-            case 'A':
-                output_lines.append(f'A {Colors.GREEN}{formatted_display_path}{Colors.END} | {stats_column_str}')
-            case 'D':
-                output_lines.append(f'D {Colors.RED}{formatted_display_path}{Colors.END} | {stats_column_str}')
-            case 'M':
-                output_lines.append(f'M {Colors.YELLOW}{formatted_display_path}{Colors.END} | {stats_column_str}')
-            case 'R':
-                output_lines.append(f'R {Colors.CYAN}{formatted_display_path}{Colors.END} | {stats_column_str}')
-            case 'T':
-                output_lines.append(f'T {Colors.BLUE}{formatted_display_path}{Colors.END} | {stats_column_str}')
+            formatted_display_path = display_path_str.ljust(path_display_width)
+        
+        match True:
+            case d_item.new_file:
+                output_lines.append(f'{Colors.GREEN}A {formatted_display_path}{Colors.END} | {stats_column_str}')
+            case d_item.deleted_file:
+                output_lines.append(f'{Colors.RED}D {formatted_display_path}{Colors.END} | {stats_column_str}')
+            case d_item.renamed_file:
+                output_lines.append(f'{Colors.CYAN}R {formatted_display_path}{Colors.END} | {stats_column_str}')
             case _:
-                output_lines.append(f'? {Colors.WHITE}{formatted_display_path}{Colors.END} | {stats_column_str}')
+                output_lines.append(f'{Colors.YELLOW}M {formatted_display_path}{Colors.END} | {stats_column_str}')
+            # case _:
+                # output_lines.append(f'? {Colors.WHITE}{formatted_display_path}{Colors.END} | {stats_column_str}')
 
     output_lines.sort() 
     
