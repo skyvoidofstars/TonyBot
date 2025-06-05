@@ -36,7 +36,7 @@ def setup_events(bot: commands.Bot):
             f'Último commit: `{commit_hash}`.\n'
             f'## {commit_msg}\n'
             # f'{commit_msg.split('\n', 1)[1] if len(commit_msg.split('\n', 1)) > 1 else ''}\n'
-            f'{commit_summary}\n'
+            f'{commit_summary}'
             f'||<@{MentionID}>||'
         )
         
