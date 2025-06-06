@@ -12,7 +12,7 @@ from views.bau.UndoRecord import UndoRecordView
 async def _is_valid_channel(
     bot: commands.Bot, interaction: discord.Interaction, session: Session
 ) -> bool:
-    if interaction.channel.id not in ChestAllowedChannels:
+    if interaction.channel.id != chest_channel_id:
         AllowedChannel: Chest | None = (
             session.query(Chest.channel_id)
             .filter_by(guild_id=interaction.guild.id)

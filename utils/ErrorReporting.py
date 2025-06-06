@@ -2,7 +2,7 @@ import discord
 from discord.ext import commands
 from sqlalchemy.orm import Session
 from db import User, Log, _new_session
-from config import LogChannel, MentionID
+from config import log_channel, reporting_mention_id
 from utils.UserManager import get_or_create_user
 
 
@@ -25,9 +25,9 @@ async def log_and_notify(
         )
         await (
             bot.get_guild(interaction.guild.id)
-            .get_channel(LogChannel)
+            .get_channel(log_channel)
             .send(
-                f'<@{MentionID}>\nErro no comando {interaction.command.name} por {interaction.user.name}:\n{text}'
+                f'<@{reporting_mention_id}>\nErro no comando {interaction.command.name} por {interaction.user.name}:\n{text}'
             )
         )
     elif interaction.type == discord.InteractionType.component:
@@ -38,9 +38,9 @@ async def log_and_notify(
         )
         await (
             bot.get_guild(interaction.guild.id)
-            .get_channel(LogChannel)
+            .get_channel(log_channel)
             .send(
-                f'<@{MentionID}>\nErro ao executar uma ação por {interaction.user.name}:\n{text}'
+                f'<@{reporting_mention_id}>\nErro ao executar uma ação por {interaction.user.name}:\n{text}'
             )
         )
 

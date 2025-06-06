@@ -1,6 +1,6 @@
 import discord
 from discord.ext import commands
-from config import LogChannel, MentionID
+from config import log_channel, reporting_mention_id
 
 
 def setup_events(bot: commands.Bot):
@@ -35,8 +35,8 @@ def setup_events(bot: commands.Bot):
             log_error = actual_error if actual_error is not error else error
             await (
                 bot.get_guild(interaction.guild.id)
-                .get_channel(LogChannel)
+                .get_channel(log_channel)
                 .send(
-                    f'<@{MentionID}>\nErro no comando {interaction.command.name} por {interaction.user.name}:\n{log_error}'
+                    f'<@{reporting_mention_id}>\nErro no comando {interaction.command.name} por {interaction.user.name}:\n{log_error}'
                 )
             )

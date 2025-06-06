@@ -64,7 +64,7 @@ class ConfirmRemove(discord.ui.View):
             self.session.add(log)
             self.session.commit()
 
-            await self.bot.get_guild(interaction.guild.id).get_channel(LogChannel).send(
+            await self.bot.get_guild(interaction.guild.id).get_channel(log_channel).send(
                 content=f'{self.user.mention} removeu o registro de {self.chest.user.user_character_name} de {self.chest.quantity} un. de {self.chest.item.item_name}.{' Observação da transação: ' + self.chest.observations if self.chest.observations else ''}\nID da transação removida: {self.chest.chest_id}'
             )
 
@@ -72,8 +72,8 @@ class ConfirmRemove(discord.ui.View):
             await interaction.response.send_message(
                 f'Erro ao remover registro: {e}', ephemeral=True
             )
-            await self.bot.get_guild(interaction.guild.id).get_channel(LogChannel).send(
-                f'<@{MentionID}>\nErro no comando remover_registro (botões) por {interaction.user.name}:\n{e}'
+            await self.bot.get_guild(interaction.guild.id).get_channel(log_channel).send(
+                f'<@{reporting_mention_id}>\nErro no comando remover_registro (botões) por {interaction.user.name}:\n{e}'
             )
         finally:
             self.session.close()

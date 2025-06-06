@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 from datetime import datetime
 from db import Chest, _new_session
 from utils.UserManager import has_user_admin_permission
-from config import LogChannel, ChestAllowedChannels
+from config import log_channel, chest_channel_id
 
 
 def _is_user_allowed(user: discord.User, chest: Chest) -> bool:
@@ -38,7 +38,7 @@ class UndoRecordView(ui.View):
         self.session.delete(self.chest)
         self.session.commit()
         self.session.close()
-        await self.bot.get_channel(LogChannel).send(
+        await self.bot.get_channel(log_channel).send(
             content=f'Registro de {user_character_name} de {quantity} x {item_name} '
             f'desfeito por {interaction.user.mention}')
         embed: discord.Embed = interaction.message.embeds[0]
@@ -55,7 +55,7 @@ class UndoRecordView(ui.View):
 
     async def on_timeout(self):
         original_message: discord.Message = await self.bot.get_channel(
-            ChestAllowedChannels[0]
+            chest_channel_id
         ).fetch_message(self.chest.message_id)
 
         embed: list[discord.Embed] = original_message.embeds[0]

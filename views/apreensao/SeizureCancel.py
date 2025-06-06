@@ -4,7 +4,7 @@ from discord.ext import commands
 from sqlalchemy.orm import Session
 from datetime import datetime
 from db import Seizure, Log, _new_session
-from config import brasilia_tz, LogChannel
+from config import brasilia_tz, log_channel
 from utils.UserManager import has_user_admin_permission
 
 
@@ -54,7 +54,7 @@ class SeizureCancelView(ui.View):
         session.commit()
         session.refresh(log)
 
-        await self.bot.get_guild(int(log.guild)).get_channel(LogChannel).send(
+        await self.bot.get_guild(int(log.guild)).get_channel(log_channel).send(
             content=log.description
         )
 

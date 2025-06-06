@@ -3,7 +3,7 @@ from discord.ext import commands
 from db import _new_session, Log
 from datetime import datetime
 from utils.UserManager import has_user_admin_permission
-from config import brasilia_tz, LogChannel, MentionID
+from config import brasilia_tz, log_channel, reporting_mention_id
 
 
 def setup_commands(bot: commands.Bot):
@@ -32,9 +32,9 @@ def setup_commands(bot: commands.Bot):
         except Exception as e:
             await (
                 bot.get_guild(ctx.guild.id)
-                .get_channel(LogChannel)
+                .get_channel(log_channel)
                 .send(
-                    f'<@{MentionID}>\nErro no comando apagar por {ctx.author.name}:\n{e}'
+                    f'<@{reporting_mention_id}>\nErro no comando apagar por {ctx.author.name}:\n{e}'
                 )
             )
         finally:

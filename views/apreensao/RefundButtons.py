@@ -10,7 +10,7 @@ from db import Chest, Item, Seizure, SeizureRefund, User, _new_session
 from utils.UserManager import get_or_create_user, has_user_admin_permission
 from utils.ErrorReporting import log_and_notify
 from views.apreensao.functions import new_refund_message_content
-from config import brasilia_tz, seizure_value, embed_width, ChestAllowedChannels
+from config import brasilia_tz, seizure_value, embed_width, chest_channel_id
 
 
 def _get_refund_id(interaction: discord.Interaction) -> int:
@@ -302,7 +302,7 @@ class RefundButtonsView(ui.View):
         )
 
         msg: discord.Message = await interaction.guild.get_channel(
-            ChestAllowedChannels[0]
+            chest_channel_id
         ).send(embed=embed)
 
         chest.message_id = msg.id

@@ -15,12 +15,12 @@ allowed_roles: list[int] = [
 ]
 
 # Allowed chest slash command channels 
-ChestAllowedChannels: list[int] = [
+chest_channel_id: list[int] = [
     0000000000000000000 # Channel name
 ]
 
 # Discord server id and channel id for bot logs
-LogChannel:id = 000000000000000000
+log_channel:id = 000000000000000000
 
 # Seizures
 SeizureChannel:id = 000000000000000000
@@ -31,4 +31,4 @@ seizure_value: int = 000
 aux_db_channel: int = 1378362943821053982
 # ID to be mentioned in errors or initializations
 # 000000000000000000 to user or '&000000000000000000' to roles
-MentionID:id = 000000000000000000
+reporting_mention_id:id = 000000000000000000

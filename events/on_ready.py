@@ -1,6 +1,6 @@
 import discord
 from discord.ext import commands
-from config import LogChannel, MentionID
+from config import log_channel, reporting_mention_id
 from datetime import datetime
 from utils.CommitInfo import get_latest_commit_info
 from utils.PersistantViewManager import update_new_seizure_message
@@ -37,7 +37,7 @@ def setup_events(bot: commands.Bot):
             f'## {commit_msg}\n'
             # f'{commit_msg.split('\n', 1)[1] if len(commit_msg.split('\n', 1)) > 1 else ''}\n'
             f'{commit_summary}'
-            f'||<@{MentionID}>||'
+            f'||<@{reporting_mention_id}>||'
         )
         
-        await bot.get_channel(LogChannel).send(message_content)
+        await bot.get_channel(log_channel).send(message_content)
