@@ -1,7 +1,79 @@
 import discord, io
 from PIL import Image, ImageDraw, ImageFont
+import numpy as np
 from config import seizure_value
 
+def _find_coeffs(source_coords, target_coords):
+    matrix = []
+    for s, t in zip(source_coords, target_coords):
+        matrix.append([t[0], t[1], 1, 0, 0, 0, -s[0]*t[0], -s[0]*t[1]])
+        matrix.append([0, 0, 0, t[0], t[1], 1, -s[1]*t[0], -s[1]*t[1]])
+    
+    A = np.array(matrix, dtype=np.float64)
+    B = np.array(source_coords).reshape(8)
+    
+    res = np.linalg.solve(A, B)
+    return res.tolist()
+
+def get_forbidden_message_image(interaction: discord.Interaction) -> discord.File:
+    
+    first_name: str = interaction.user.display_name.split(sep=' ')[0]
+    
+    text: str = f'eu sou lerda\nmas não sou\nburra, {first_name}'
+
+    image: Image = Image.open('assets/response_unauthorized.png').convert('RGBA')
+    draw = ImageDraw.Draw(image)
+    font = ImageFont.truetype(
+        font='assets/arial.ttf',
+        encoding='unic',
+        size=22)
+    draw.text(
+        xy=(155, 50),
+        text=text,
+        fill='black',
+        anchor='mm',
+        align='center',
+        font=font)
+
+    output = io.BytesIO()
+    image.save(output, format='PNG')
+    output.seek(0)
+    
+    file: discord.File = discord.File(fp=output, filename='lerda_mas_nao_burra.png')
+    
+    return file
+
+def get_tv_image_file(reference_image: io.BytesIO):
+    reference_image = Image.open(reference_image).convert('RGBA')
+    tv_image = Image.open('assets/watching_tv.png').convert('RGBA')
+
+    width, height = reference_image.size
+    cantos_origem = [(0, 0), (width, 0), (width, height), (0, height)]
+
+    corners: list[tuple[int, int]] = [
+        (1351, 406), # -> Canto Superior Esquerdo
+        (1876, 330), # -> Canto Superior Direito
+        (1869, 686), # -> Canto Inferior Direito
+        (1344, 682) # -> Canto Inferior Esquerdo
+    ]
+
+    coeffs = _find_coeffs(cantos_origem, corners)
+
+    distorted_image = reference_image.transform(
+        size=tv_image.size,
+        method=Image.Transform.PERSPECTIVE,
+        data=coeffs,
+        resample=Image.Resampling.BICUBIC, 
+    )
+
+    output_buffer = io.BytesIO()
+    imagem_final = Image.alpha_composite(tv_image, distorted_image)
+    imagem_final.save(output_buffer, format='PNG')
+    output_buffer.seek(0)
+
+    image_file: discord.File = discord.File(fp=output_buffer, filename='tv_mec.png')
+    
+    return image_file
 
 def get_image_url_from_message(message: discord.Message) -> str | None:
     if not message.attachments:

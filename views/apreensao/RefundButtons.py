@@ -7,6 +7,7 @@ from dateutil import parser
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 from db import Chest, Item, Seizure, SeizureRefund, User, _new_session
+from utils.ImageManager import get_forbidden_message_image
 from utils.UserManager import get_or_create_user, has_user_admin_permission
 from utils.ErrorReporting import log_and_notify
 from views.apreensao.functions import new_refund_message_content
@@ -237,11 +238,13 @@ class RefundButtonsView(ui.View):
         self, interaction: discord.Interaction, button: ui.Button
     ):
         if not has_user_admin_permission(discord_uer=interaction.user):
+            image_file: discord.File = get_forbidden_message_image(interaction=interaction)
             await interaction.response.send_message(
-                content='Você não tem permissão para finalizar pagamentos.',
-                ephemeral=True,
-                delete_after=5,
+                content=interaction.user.mention,
+                file=image_file,
+                delete_after=15
             )
+            session.close()
             return
 
         try:

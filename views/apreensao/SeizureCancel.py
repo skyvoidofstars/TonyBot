@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 from datetime import datetime
 from db import Seizure, Log, _new_session
 from config import brasilia_tz, log_channel
+from utils.ImageManager import get_forbidden_message_image
 from utils.UserManager import has_user_admin_permission
 
 
@@ -34,8 +35,11 @@ class SeizureCancelView(ui.View):
         )
 
         if not _is_user_allowed(user=interaction.user, seizure=seizure):
+            image_file: discord.File = get_forbidden_message_image(interaction=interaction)
             await interaction.response.send_message(
-                'Você não tem permissão para cancelar esta apreensão.', ephemeral=True
+                content=interaction.user.mention,
+                file=image_file,
+                delete_after=15
             )
             session.close()
             return
@@ -47,7 +51,10 @@ class SeizureCancelView(ui.View):
         log = Log(
             guild=interaction.guild_id,
             user_id=interaction.user.id,
-            description=f'Apreensão ID {seizure.seizure_id} (Oficial: {seizure.officer_name} #{seizure.officer_badge}) de {seizure.user.user_character_name} foi CANCELADA por {interaction.user.name}.',
+            description= (
+                f'Apreensão ID {seizure.seizure_id} (Oficial: {seizure.officer_name} #{seizure.officer_badge}) de '
+                f'{seizure.user.user_character_name} foi CANCELADA por {interaction.user.name}.'
+            ),
             timestamp=datetime.now(brasilia_tz),
         )
         session.add(log)
