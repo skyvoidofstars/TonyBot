@@ -1,5 +1,6 @@
 import discord
 import asyncio
+import time
 from discord import ui
 from discord.ext import commands
 from datetime import datetime
@@ -36,26 +37,56 @@ async def _update_seizure_messages(bot: commands.Bot, refund_id: int, refund_mes
         .all()
     )
 
+    i_timer: float = time.monotonic()
     for _message in _seizure_messages:
-        await asyncio.sleep(0.3)
-        try:
-            _fetched_message: discord.Message = await bot.get_channel(
-                seizure_channel_id
-            ).fetch_message(_message[0])
+        # Etapa 1 --> busca a mensagem
+        while True:
+            try:
+                _fetched_message: discord.Message = await bot.get_channel(
+                    seizure_channel_id
+                ).fetch_message(_message[0])
+            except discord.RateLimited as e:
+                print(f'[RATE LIMIT] Fomos limitados ao buscar a mensagem {_message[0]}. Esperando {e.retry_after:.2f} segundos.')
+                await asyncio.sleep(e.retry_after)
+            except Exception as e:
+                print(f'[ERRO INESPERADO] ao buscar a mensagem {_message[0]}: {e}. Pulando.')
+                _fetched_message = None
+                break
+            
+            if not _fetched_message:
+                continue
+
+            
             _embed: discord.Embed = _fetched_message.embeds[0]
             _embed.color = discord.Color.green()
-
             _embed.add_field(
                 name=f'Reembolso realizado <t:{int(datetime.now().timestamp())}:R>',
                 value=refund_message
             )
-
-            await _fetched_message.edit(embed=_embed, view=None)
-            await _fetched_message.add_reaction('✅')
-        except Exception as e:
-            continue
-
-
+            # Etapa 2 --> edita a mensagem
+            while True:
+                try:
+                    await _fetched_message.edit(embed=_embed, view=None)
+                    break
+                except discord.RateLimited as e:
+                    print(f'[RATE LIMIT] Fomos limitados ao editar a mensagem {_message[0]}. Esperando {e.retry_after:.2f} segundos.')
+                    await asyncio.sleep(e.retry_after)
+                except Exception as e: # Simplificado, já que a mensagem existe
+                    print(f'[ERRO INESPERADO] ao editar a mensagem {_message[0]}: {e}. Pulando reação.')
+                    break
+            # Etapa 3 --> reage a mensagem        
+            while True:
+                try:
+                    await _fetched_message.add_reaction('✅')
+                    break
+                except discord.RateLimited as e:
+                    print(f'[RATE LIMIT] Fomos limitados ao reagir na mensagem {_message[0]}. Esperando {e.retry_after:.2f} segundos.')
+                    await asyncio.sleep(e.retry_after)
+                except Exception as e:
+                    print(f'[ERRO INESPERADO] ao reagir na mensagem {_message[0]}: {e}.')
+                    break
+        print(f'[DEBUG] Mensagem editadas em {i_timer - time.monotonic():.2f} segundos...')
+        
 class ApproveRefundView(ui.View):
     def __init__(
         self, bot: commands.Bot, original_message: discord.Message, limit_date: datetime
