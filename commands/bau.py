@@ -16,6 +16,7 @@ async def _is_valid_channel(
         AllowedChannel: Chest | None = (
             session.query(Chest.channel_id)
             .filter_by(guild_id=interaction.guild.id)
+            .first()
             .scalar()
         )
         if AllowedChannel:

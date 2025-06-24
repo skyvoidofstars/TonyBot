@@ -32,6 +32,7 @@ def setup_commands(bot: commands.Bot):
 
         embed = discord.Embed(
             title='📦 Inventário do baú',
+            description=f'md\n{summary}\n',
             color=discord.Color.blue(),
             timestamp=datetime.now(brasilia_tz),
         )
@@ -39,7 +40,6 @@ def setup_commands(bot: commands.Bot):
         embed.set_author(
             name=interaction.user.name, icon_url=interaction.user.display_avatar.url
         )
-        embed.add_field(name='', value=f'```md\n{summary}\n```', inline=False)
 
         await interaction.response.send_message(embed=embed)
 

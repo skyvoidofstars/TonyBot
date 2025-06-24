@@ -1,4 +1,5 @@
 import discord
+import asyncio
 from discord import ui
 from discord.ext import commands
 from datetime import datetime
@@ -36,22 +37,23 @@ async def _update_seizure_messages(bot: commands.Bot, refund_id: int, refund_mes
     )
 
     for _message in _seizure_messages:
+        await asyncio.sleep(0.3)
         try:
             _fetched_message: discord.Message = await bot.get_channel(
                 seizure_channel_id
             ).fetch_message(_message[0])
+            _embed: discord.Embed = _fetched_message.embeds[0]
+            _embed.color = discord.Color.green()
+
+            _embed.add_field(
+                name=f'Reembolso realizado <t:{int(datetime.now().timestamp())}:R>',
+                value=refund_message
+            )
+
+            await _fetched_message.edit(embed=_embed, view=None)
+            await _fetched_message.add_reaction('✅')
         except Exception as e:
             continue
-        _embed: discord.Embed = _fetched_message.embeds[0]
-        _embed.color = discord.Color.green()
-
-        _embed.add_field(
-            name=f'Reembolso realizado <t:{int(datetime.now().timestamp())}:R>',
-            value=refund_message
-        )
-
-        await _fetched_message.edit(embed=_embed, view=None)
-        await _fetched_message.add_reaction('✅')
 
 
 class ApproveRefundView(ui.View):
@@ -125,19 +127,23 @@ class ApproveRefundView(ui.View):
             embed=message_embed,
             view=RefundButtonsView(bot=self.bot),
         )
-        await _update_seizure_messages(bot=self.bot, refund_id=new_refund.refund_id, refund_message=refund_message.jump_url)
 
         new_refund.message_id = refund_message.id
         session.commit()
         session.close()
 
-
-
         await bot_advice.edit(
-            content=f'Reembolsos publicados: {refund_message.jump_url}\nDeletando mensagem em 5 segundos...',
-            delete_after=5,
+            content= (
+                f'Reembolsos publicados: {refund_message.jump_url}\n\n'
+                'As mensagens de apreensões estão sendo atualizadas, podem ocorrer falhas...\n\n'
+                'Deletando mensagem em 10 segundos...'
+            ),
+            delete_after=10,
         )
-        await interaction.message.delete(delay=5)
+        
+        await _update_seizure_messages(bot=self.bot, refund_id=new_refund.refund_id, refund_message=refund_message.jump_url)
+        
+        await interaction.message.delete(delay=10)
         await self.on_timeout()
 
     async def on_timeout(self):
