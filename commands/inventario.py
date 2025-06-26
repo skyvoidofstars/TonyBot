@@ -32,7 +32,7 @@ def setup_commands(bot: commands.Bot):
 
         embed = discord.Embed(
             title='📦 Inventário do baú',
-            description=f'md\n{summary}\n',
+            description=f'```md\n{summary}\n```',
             color=discord.Color.blue(),
             timestamp=datetime.now(brasilia_tz),
         )

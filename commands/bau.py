@@ -2,7 +2,7 @@ import discord, textwrap
 from discord.ext import commands
 from config import *
 from db import _new_session, User, Chest, Item
-from sqlalchemy import func
+from sqlalchemy import desc, func
 from sqlalchemy.orm import Session
 from datetime import datetime
 from utils.UserManager import get_or_create_user
@@ -16,12 +16,12 @@ async def _is_valid_channel(
         AllowedChannel: Chest | None = (
             session.query(Chest.channel_id)
             .filter_by(guild_id=interaction.guild.id)
+            .order_by(Chest.created_at.desc())
             .first()
-            .scalar()
         )
         if AllowedChannel:
             await interaction.followup.send(
-                f'Esse comando só pode ser usado em {bot.get_channel(AllowedChannel).mention}!'
+                f'Esse comando só pode ser usado em {bot.get_channel(AllowedChannel[0]).mention}!'
             )
         else:
             await interaction.followup.send(

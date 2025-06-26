@@ -87,13 +87,14 @@ async def _update_seizure_messages(bot: commands.Bot, refund_id: int, refund_mes
             except Exception as e:
                 print(f'[ERRO INESPERADO] ao reagir na mensagem {_message[0]}: {e}.')
                 break
-        total_duration = time.monotonic() - i_timer
-        print("="*40)
-        print(f"✅ Processo de atualização de mensagens concluído.")
-        print(f"   - Mensagens na fila: {len(_seizure_messages)}")
-        print(f"   - Tempo total de execução: {total_duration:.2f} segundos.")
-        print(f"   - Média de tempo por mensagem: {total_duration / len(_seizure_messages):.2f} segundos.")
-        print("="*40)
+            
+    total_duration = time.monotonic() - i_timer
+    print("="*40)
+    print(f"✅ Processo de atualização de mensagens concluído.")
+    print(f"   - Mensagens na fila: {len(_seizure_messages)}")
+    print(f"   - Tempo total de execução: {total_duration:.2f} segundos.")
+    print(f"   - Média de tempo por mensagem: {total_duration / len(_seizure_messages):.2f} segundos.")
+    print("="*40)
 
         
 class ApproveRefundView(ui.View):
