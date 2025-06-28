@@ -7,6 +7,7 @@ from datetime import datetime
 from db import User, Seizure, SeizureRefund, _new_session
 from sqlalchemy import func
 from sqlalchemy.orm import Session
+from utils.DatabaseFunctions import create_db_snapshot
 from utils.ErrorReporting import log_and_notify
 from utils.UserManager import get_or_create_user
 from views.apreensao.functions import new_refund_message_content
@@ -126,6 +127,8 @@ class ApproveRefundView(ui.View):
             content=f'{interaction.user.mention} Publicação iniciada, aguarde alguns segundos...'
         )
 
+        await create_db_snapshot(bot=self.bot)
+        
         user: User = get_or_create_user(discord_user=interaction.user)
 
         session: Session = _new_session()
