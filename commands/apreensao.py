@@ -17,7 +17,7 @@ def _get_datetime_from_string(string: str) -> datetime:
         _datetime: datetime = _parsed_date.replace(tzinfo=brasilia_tz)
     elif _parsed_date.tzinfo != brasilia_tz:
         _datetime: datetime = _parsed_date.astimezone(brasilia_tz)
-    _datetime = _datetime.replace(hour=23, minute=59, second=59)
+    _datetime = _datetime.replace(hour=0, minute=0, second=0)
 
     return _datetime
 
@@ -30,8 +30,8 @@ def _get_valid_seizure_count(
         session.query(func.count(Seizure.seizure_id))
         .filter(
             or_(Seizure.status == 'CRIADO', Seizure.status == 'REEMBOLSADO'),
-            Seizure.created_at >= lower_limit_date,
-            Seizure.created_at <= upper_limit_date,
+            Seizure.created_at >= lower_limit_date.replace(hour=0, minute=0, second=0),
+            Seizure.created_at <= upper_limit_date.replace(hour=23, minute=59, second=59),
         )
         .scalar()
     )
@@ -66,7 +66,7 @@ def setup_commands(bot: commands.Bot):
                 (func.count(Seizure.seizure_id) * seizure_value).label('total_value'),
             )
             .join(User, User.user_id == Seizure.user_id)
-            .filter(Seizure.status == 'CRIADO', Seizure.created_at <= upper_limit_date)
+            .filter(Seizure.status == 'CRIADO', Seizure.created_at <= upper_limit_date.replace(hour=23, minute=59, second=59))
             .group_by(User.user_character_name)
             .order_by(User.user_character_name)
         )

@@ -19,7 +19,7 @@ def _update_seizure_status(status: str, refund_id: int, limit_date: datetime):
     session: Session = _new_session()
     seizure_list: list[Seizure] = (
         session.query(Seizure)
-        .filter(Seizure.status == 'CRIADO', Seizure.created_at <= limit_date)
+        .filter(Seizure.status == 'CRIADO', Seizure.created_at <= limit_date.replace(hour=23, minute=59, second=59))
         .all()
     )
 
@@ -137,7 +137,7 @@ class ApproveRefundView(ui.View):
             session.query((func.count(Seizure.seizure_id) * seizure_value))
             .join(User, User.user_id == Seizure.user_id)
             .filter(
-                Seizure.status == 'CRIADO', Seizure.created_at <= self.upper_limit_date
+                Seizure.status == 'CRIADO', Seizure.created_at <= self.upper_limit_date.replace(hour=23, minute=59, second=59)
             )
             .order_by(User.user_character_name)
             .scalar()
