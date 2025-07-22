@@ -214,7 +214,7 @@ def _get_refund_information(refund_id: int, refund_finishing: bool) -> str:
 
     _refund_information: str = (
         # f'{Colors.BLUE}{'_' * embed_width}{Colors.END}\n'
-        f'{Colors.BLUE}{'Nome'.center(8, ' ')}|{'VALOR'.center(11, ' ')}\n' #|{'RETIRADA'.center(13)}|{Colors.END}\n'
+        f'{Colors.BLUE}{'NOME'.center(8, ' ')}|{'VALOR'.center(11, ' ')}\n' #|{'RETIRADA'.center(13)}|{Colors.END}\n'
     )
     for _row in _refund_list:
         _user = _row[0]
