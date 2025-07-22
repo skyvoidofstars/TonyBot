@@ -214,7 +214,7 @@ def _get_refund_information(refund_id: int, refund_finishing: bool) -> str:
 
     _refund_information: str = (
         # f'{Colors.BLUE}{'_' * embed_width}{Colors.END}\n'
-        f'{Colors.BLUE}{'FUNCIONÁRIO'.center(13, ' ')}|{'VALOR'.center(11, ' ')}|{'RETIRADA'.center(13)}|{Colors.END}\n'
+        f'{Colors.BLUE}{'Nome'.center(8, ' ')}|{'VALOR'.center(11, ' ')}|{'RETIRADA'.center(13)}|{Colors.END}\n'
     )
     for _row in _refund_list:
         _user = _row[0]
@@ -231,7 +231,7 @@ def _get_refund_information(refund_id: int, refund_finishing: bool) -> str:
                 _ansi_prefix = Colors.RED
                 _date_if_redeemed = 'RETIDO'
         _formatted_value: str = f'{_value:,}'.replace(',', '.')
-        _refund_information += f'{_ansi_prefix}{_user.ljust(12)[:12]} |  $ {_formatted_value.rjust(7)} | {_date_if_redeemed.ljust(12)}|{Colors.END}\n'
+        _refund_information += f'{_ansi_prefix}{_user.split(' ')[0].ljust(8)[:8]}|  $ {_formatted_value.rjust(7)}\n' # | {_date_if_redeemed.ljust(12)}|{Colors.END}\n'
 
     _refund_information += (
         f'\n'
@@ -239,7 +239,7 @@ def _get_refund_information(refund_id: int, refund_finishing: bool) -> str:
         f'Valor resgatado: {_redeemed_value} {f'(restam {_remaining_value})' if _remaining_value_int > 0 else ''}\n'
     )
 
-    _refund_information = f'```ansi\n{_refund_information.strip()}\n```'
+    _refund_information = f'```ansi\n{len(_refund_information)}\n```'
 
     return _refund_information
 
