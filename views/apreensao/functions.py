@@ -264,7 +264,7 @@ def _get_pendent_users_mention(refund_id: int) -> str:
 
     _mentions = f'|| {_mentions} ||'
 
-    return r'<@&1216519580852289537>'
+    return r'<@&925570323561189416> <@&1216519580852289537>'
     return _mentions
 
 
