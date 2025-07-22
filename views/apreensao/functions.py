@@ -239,7 +239,7 @@ def _get_refund_information(refund_id: int, refund_finishing: bool) -> str:
         f'Valor resgatado: {_redeemed_value} {f'(restam {_remaining_value})' if _remaining_value_int > 0 else ''}\n'
     )
 
-    _refund_information = f'```ansi\n{len(_refund_information)}\n```'
+    _refund_information = f'```ansi\n{_refund_information}\n```'
 
     return _refund_information
 
