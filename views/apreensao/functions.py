@@ -214,7 +214,7 @@ def _get_refund_information(refund_id: int, refund_finishing: bool) -> str:
 
     _refund_information: str = (
         # f'{Colors.BLUE}{'_' * embed_width}{Colors.END}\n'
-        f'{Colors.BLUE}{'Nome'.center(8, ' ')}|{'VALOR'.center(11, ' ')}|{'RETIRADA'.center(13)}|{Colors.END}\n'
+        f'{Colors.BLUE}{'Nome'.center(8, ' ')}|{'VALOR'.center(11, ' ')}\n' #|{'RETIRADA'.center(13)}|{Colors.END}\n'
     )
     for _row in _refund_list:
         _user = _row[0]
@@ -264,6 +264,7 @@ def _get_pendent_users_mention(refund_id: int) -> str:
 
     _mentions = f'|| {_mentions} ||'
 
+    return r'<@&1216519580852289537>'
     return _mentions
 
 
