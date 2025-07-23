@@ -44,6 +44,20 @@ class SeizureCancelView(ui.View):
             session.close()
             return
 
+        if seizure.status != 'CRIADO':
+            await interaction.response.send_message(
+                content=f'{interaction.user.mention} Esta apreensão não pode ser cancelada porque já foi reembolsada!'
+            ) 
+            try:
+                await interaction.message.edit(embed=interaction.message.embeds[0], view=None)
+            except Exception as e:
+                print(f'Error editing message: {e}')
+            finally:
+                session.close()
+            button.disabled = True
+            self.stop()
+            return
+        
         seizure.status = 'CANCELADO'
         session.add(seizure)
         session.commit()
@@ -78,5 +92,7 @@ class SeizureCancelView(ui.View):
             embed=original_embed,
             view=None,
         )
-
+        self.stop()
+        
+    async def on_timeout(self):
         self.stop()
