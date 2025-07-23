@@ -174,7 +174,7 @@ class ApproveRefundView(ui.View):
 
         new_refund.message_id = refund_message.id
         session.commit()
-        session.close()
+        session.refresh(new_refund)
 
         await bot_advice.edit(
             content= (
@@ -186,6 +186,7 @@ class ApproveRefundView(ui.View):
         )
         
         await _update_seizure_messages(bot=self.bot, refund_id=new_refund.refund_id, refund_message=refund_message.jump_url)
+        session.close()
         
         await interaction.message.delete(delay=10)
         await self.on_timeout()

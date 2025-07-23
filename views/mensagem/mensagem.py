@@ -1,13 +1,6 @@
-import discord, regex
+import discord
 from discord import ui
 from discord.ext import commands
-from sqlalchemy.orm import Session
-from datetime import datetime
-from config import brasilia_tz
-from db import User, Seizure, _new_session
-from utils.UserManager import get_or_create_user
-from utils.ErrorReporting import log_and_notify
-
 
 class SupervisionMessageModal(ui.Modal, title='💬 Nova mensagem privada'):
     message_title: ui.TextInput = ui.TextInput(

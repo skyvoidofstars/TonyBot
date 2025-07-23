@@ -212,9 +212,9 @@ def _get_refund_information(refund_id: int, refund_finishing: bool) -> str:
 
     _session.close()
 
-    _refund_information: str = (
+    _refund_values_information: str = (
         # f'{Colors.BLUE}{'_' * embed_width}{Colors.END}\n'
-        f'{Colors.BLUE}{'NOME'.center(8, ' ')}|{'VALOR'.center(11, ' ')}\n' #|{'RETIRADA'.center(13)}|{Colors.END}\n'
+        f'{Colors.BLUE}|{'FUNCIONÁRIO'.center(14, ' ')}|{'VALOR'.center(11, ' ')}|{'RETIRADA'.center(13)}|{Colors.END}\n' # 33 caract
     )
     for _row in _refund_list:
         _user = _row[0]
@@ -231,17 +231,16 @@ def _get_refund_information(refund_id: int, refund_finishing: bool) -> str:
                 _ansi_prefix = Colors.RED
                 _date_if_redeemed = 'RETIDO'
         _formatted_value: str = f'{_value:,}'.replace(',', '.')
-        _refund_information += f'{_ansi_prefix}{_user.split(' ')[0].ljust(8)[:8]}|  $ {_formatted_value.rjust(7)}\n' # | {_date_if_redeemed.ljust(12)}|{Colors.END}\n'
+        _refund_values_information += f'{_ansi_prefix}| {_user.split(' ')[0].ljust(13)[:13]}| $ {_formatted_value.rjust(7)} | {_date_if_redeemed.center(12)}|{Colors.END}\n'
 
-    _refund_information += (
-        f'\n'
+    _refund_totals = (
         f'Valor total: {_total_value}\n'
         f'Valor resgatado: {_redeemed_value} {f'(restam {_remaining_value})' if _remaining_value_int > 0 else ''}\n'
     )
 
-    _refund_information = f'```ansi\n{_refund_information}\n```'
+    _refund_values_information = f'```ansi\n{_refund_values_information}\n```'
 
-    return _refund_information
+    return _refund_values_information, _refund_totals
 
 
 def _get_pendent_users_mention(refund_id: int) -> str:
@@ -263,8 +262,7 @@ def _get_pendent_users_mention(refund_id: int) -> str:
         return None
 
     _mentions = f'|| {_mentions} ||'
-
-    return r'<@&925570323561189416> <@&1216519580852289537>'
+    
     return _mentions
 
 
@@ -292,30 +290,26 @@ async def new_refund_message_content(
     upper_limit_date = upper_limit_date.strftime(format='%d/%m')
 
     if not refund_finishing:
-        message_content: str = _get_pendent_users_mention(refund_id=refund_id)
+        message_content: str = r'<@&925570323561189416> <@&1216519580852289537>'
     else:
         message_content: str = ''
 
+    refund_info, refund_resume = _get_refund_information(
+        refund_id=refund_id, refund_finishing=refund_finishing
+    )
+    
     message_embed: discord.Embed = discord.Embed(
         color=discord.Color.green() if not refund_finishing else discord.Color.red(),
-        title=f'Reembolso de apreensões',
-        timestamp=datetime.now(brasilia_tz),
-    )
-    refund_info: str = _get_refund_information(
-        refund_id=refund_id, refund_finishing=refund_finishing
+        title=f'Reembolso de apreensões ({lower_limit_date} à {upper_limit_date})',
+        description=refund_info,
+        timestamp=datetime.now(brasilia_tz)
     )
 
     message_embed.set_author(
         name=_author_user.name, icon_url=_author_user.display_avatar.url
     )
 
-    message_embed.add_field(
-        name='📅 Período considerado',
-        value=f'```\n{lower_limit_date} à {upper_limit_date}\n```',
-        inline=False,
-    )
-
-    message_embed.add_field(name='💵 Reembolsos', value=refund_info, inline=False)
+    message_embed.add_field(name='💵 Resumo', value=refund_resume, inline=False)
 
     message_embed.add_field(
         name='Para confirmar o recebimento, clique no botão abaixo',
