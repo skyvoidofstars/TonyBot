@@ -2,10 +2,11 @@ import discord
 from discord.ext import commands
 from sqlalchemy import desc
 from sqlalchemy.orm import Session
-from config import seizure_channel_id
+from config import seizure_channel_id, chat_channel_id
 from db import User, Seizure, _new_session
 from utils.UserManager import get_or_create_user
 from utils.ImageManager import get_image_url_from_message
+from utils.GeminiIntegration import marina_response
 from views.apreensao.functions import finish_seizure
 
 
@@ -34,5 +35,11 @@ def setup_events(bot: commands.Bot):
                         original_message=message,
                     )
                 session.close()
+        
+        if message.channel.id == chat_channel_id and str(bot.application.id) in message.content:
+            await bot.get_channel(message.channel.id).send(
+                content=marina_response(user=message.author, message=message.content),
+                reference=message
+            )
 
         await bot.process_commands(message)
