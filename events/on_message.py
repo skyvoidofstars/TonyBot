@@ -38,7 +38,7 @@ def setup_events(bot: commands.Bot):
         
         if message.channel.id == chat_channel_id and str(bot.application.id) in message.content:
             await bot.get_channel(message.channel.id).send(
-                content=marina_response(user=message.author, message=message.content),
+                content=marina_response(message=message),
                 reference=message
             )
 
