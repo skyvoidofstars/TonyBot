@@ -6,7 +6,7 @@ from datetime import datetime
 from config import brasilia_tz
 from db import User, Seizure, _new_session
 from utils.UserManager import get_or_create_user
-from utils.ErrorReporting import log_and_notify
+# from utils.ErrorReporting import log_and_notify
 
 
 def _regex_extraction(pattern: str, value: str) -> str:
@@ -84,5 +84,10 @@ class SeizureView(ui.Modal, title='🚗 Nova apreensão'):
         )
 
     async def on_error(self, interaction: discord.Interaction, error: Exception):
-        session: Session = _new_session()
-        await log_and_notify(bot=self.bot, interaction=interaction, text=error)
+        # session: Session = _new_session()
+        # await log_and_notify(bot=self.bot, interaction=interaction, text=error)
+
+        await interaction.response.send_message(
+            content=f'Ocorreu um erro ao processar sua solicitação. Por favor, tente novamente mais tarde.\n\n{error}',
+            ephemeral=True,
+        )

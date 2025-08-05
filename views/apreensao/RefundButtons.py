@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 from db import Chest, Item, Seizure, SeizureRefund, User, _new_session
 from utils.ImageManager import get_forbidden_message_image
 from utils.UserManager import get_or_create_user, has_user_admin_permission
-from utils.ErrorReporting import log_and_notify
+# from utils.ErrorReporting import log_and_notify
 from views.apreensao.FinishingConfirmation import FinishConfirmationModal
 from views.apreensao.functions import new_refund_message_content
 from config import brasilia_tz, seizure_value, embed_width, chest_channel_id
@@ -210,5 +210,9 @@ class RefundButtonsView(ui.View):
         return
 
     async def on_error(self, interaction: discord.Interaction, error: str, item):
-        await log_and_notify(bot=self.bot, interaction=interaction, text=error)
+        # await log_and_notify(bot=self.bot, interaction=interaction, text=error)
+        await interaction.response.send_message(
+            content=f'Ocorreu um erro ao processar sua solicitação. Por favor, tente novamente mais tarde.\n\n{error}',
+            ephemeral=True
+        )
         return super().on_error(interaction, error, item)

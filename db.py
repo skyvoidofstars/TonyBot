@@ -1,12 +1,4 @@
-from sqlalchemy import (
-    create_engine,
-    Column,
-    String,
-    Integer,
-    DateTime,
-    ForeignKey,
-    Engine,
-)
+from sqlalchemy import create_engine, Column, String, Integer, DateTime, ForeignKey, Engine
 from sqlalchemy.orm import declarative_base, sessionmaker, Relationship
 
 engine: Engine = create_engine('sqlite:///data.db')
@@ -38,12 +30,8 @@ class Chest(Base):
     message_id = Column(Integer, nullable=True)
     channel_id = Column(Integer, nullable=True)
 
-    user = Relationship(
-        'User', foreign_keys=[user_id], backref='CHEST_LOG', lazy='subquery'
-    )
-    item = Relationship(
-        'Item', foreign_keys=[item_id], backref='CHEST_LOG', lazy='subquery'
-    )
+    user = Relationship('User', foreign_keys=[user_id], backref='CHEST_LOG', lazy='subquery')
+    item = Relationship('Item', foreign_keys=[item_id], backref='CHEST_LOG', lazy='subquery')
 
 
 class Item(Base):
@@ -56,9 +44,7 @@ class Item(Base):
     created_by = Column(Integer, ForeignKey('USERS.user_id'), nullable=False)
     created_at = Column(DateTime, nullable=False)
 
-    user = Relationship(
-        'User', foreign_keys=[created_by], backref='ITEMS', lazy='subquery'
-    )
+    user = Relationship('User', foreign_keys=[created_by], backref='ITEMS', lazy='subquery')
 
 
 class Seizure(Base):
@@ -79,12 +65,8 @@ class Seizure(Base):
     refund_id = Column(Integer, ForeignKey('SEIZURE_REFUNDS.refund_id'), nullable=True)
     redeemed_at = Column(DateTime, nullable=True)
 
-    user = Relationship(
-        'User', foreign_keys=[user_id], backref='SEIZURE', lazy='subquery'
-    )
-    refund = Relationship(
-        'SeizureRefund', foreign_keys=[refund_id], backref='SEIZURE', lazy='subquery'
-    )
+    user = Relationship('User', foreign_keys=[user_id], backref='SEIZURE', lazy='subquery')
+    refund = Relationship('SeizureRefund', foreign_keys=[refund_id], backref='SEIZURE', lazy='subquery')
 
 
 class SeizureRefund(Base):
@@ -101,9 +83,7 @@ class SeizureRefund(Base):
     finished_by = Column(Integer, ForeignKey('USERS.user_id'), nullable=True)
     finished_at = Column(DateTime, nullable=True)
 
-    user = Relationship(
-        'User', foreign_keys=[created_by], backref='SEIZURE_REFUNDS', lazy='subquery'
-    )
+    user = Relationship('User', foreign_keys=[created_by], backref='SEIZURE_REFUNDS', lazy='subquery')
 
 
 class PersistentMessage(Base):
@@ -127,50 +107,3 @@ class Log(Base):
 
 
 Base.metadata.create_all(engine)
-
-    ##
-    ##
-    ##
-    ##
-    ##
-    ##
-    ##
-    ##
-    ##
-    ##
-    ##
-    ##
-    ##
-    ##
-    ##
-    ##
-    ##
-    ##
-    ##
-    ##
-    ##
-    ##
-    ##
-    ##
-    ##
-    ##
-    ##
-    ##
-    ##
-    ##
-    ##
-    ##
-    ##
-    ##
-    ##
-    ##
-    ##
-    ##
-    ##
-    ##
-    ##
-    ##
-    ##
-    ##
-    ##
-    ##

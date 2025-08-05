@@ -8,7 +8,7 @@ from db import User, Seizure, SeizureRefund, _new_session
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 from utils.DatabaseFunctions import create_db_snapshot
-from utils.ErrorReporting import log_and_notify
+# from utils.ErrorReporting import log_and_notify
 from utils.UserManager import get_or_create_user
 from views.apreensao.functions import new_refund_message_content
 from views.apreensao.RefundButtons import RefundButtonsView
@@ -114,18 +114,19 @@ class ApproveRefundView(ui.View):
     @ui.button(label='Publicar reembolsos', style=discord.ButtonStyle.success)
     async def approve_button(self, interaction: discord.Interaction, button: ui.Button):
         try:
-            refund_channel = self.bot.get_guild(interaction.guild_id).get_channel(
-                refund_channel_id
-            )
+            refund_channel = self.bot.get_guild(interaction.guild_id).get_channel(refund_channel_id)
         except Exception as e:
-            await log_and_notify(bot=self.bot, interaction=interaction, text=e)
+            # await log_and_notify(bot=self.bot, interaction=interaction, text=e)
+            await interaction.response.send_message(
+                content = f'Canal de pagamentos <#{refund_channel_id}> não encontrado',
+                ephemeral = True,
+                delete_after = 15
+            )
             return
 
         await interaction.response.defer()
 
-        bot_advice = await interaction.channel.send(
-            content=f'{interaction.user.mention} Publicação iniciada, aguarde alguns segundos...'
-        )
+        bot_advice = await interaction.channel.send(content=f'{interaction.user.mention} Publicação iniciada, aguarde alguns segundos...')
 
         await create_db_snapshot(bot=self.bot)
         

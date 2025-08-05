@@ -214,7 +214,7 @@ def _get_refund_information(refund_id: int, refund_finishing: bool) -> str:
 
     _refund_values_information: str = (
         # f'{Colors.BLUE}{'_' * embed_width}{Colors.END}\n'
-        f'{Colors.BLUE}|{'FUNCIONÁRIO'.center(14, ' ')}|{'VALOR'.center(11, ' ')}|{'RETIRADA'.center(13)}|{Colors.END}\n' # 33 caract
+        f'{Colors.BLUE}|{'FUNCIONÁRIO'.center(15, ' ')}|{'VALOR'.center(11, ' ')}|{'RETIRADA'.center(13)}|{Colors.END}\n' # 33 caract
     )
     for _row in _refund_list:
         _user = _row[0]
@@ -231,7 +231,9 @@ def _get_refund_information(refund_id: int, refund_finishing: bool) -> str:
                 _ansi_prefix = Colors.RED
                 _date_if_redeemed = 'RETIDO'
         _formatted_value: str = f'{_value:,}'.replace(',', '.')
-        _refund_values_information += f'{_ansi_prefix}| {_user.split(' ')[0].ljust(13)[:13]}| $ {_formatted_value.rjust(7)} | {_date_if_redeemed.center(12)}|{Colors.END}\n'
+        _full_name: list[str] = _user.split(sep=' ')
+        _short_name: str = _full_name[0].title() + (' ' + _full_name[-1][:1].title() + '.' if len(_full_name) > 1 else '')
+        _refund_values_information += f'{_ansi_prefix}| {_short_name.ljust(13)[:13]} | $ {_formatted_value.rjust(7)} | {_date_if_redeemed.center(12)}|{Colors.END}\n'
 
     _refund_totals = (
         f'Valor total: {_total_value}\n'
