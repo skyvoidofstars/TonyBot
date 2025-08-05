@@ -46,7 +46,7 @@ class SupervisionMessageModal(ui.Modal, title='💬 Nova mensagem privada'):
         )
         
         try:
-            await self.user.send(
+            sent_message: discord.Message = await self.user.send(
                 content= (
                     f'{message_title}' +
                     f'{message_content}\n\n' +
@@ -55,7 +55,12 @@ class SupervisionMessageModal(ui.Modal, title='💬 Nova mensagem privada'):
             )
             
             await interaction.response.send_message(
-                content='Mensagem enviada com sucesso!'
+                content=(
+                    f'Mensagem enviada para {self.user.mention}\n\n' +
+                    f'{'-='*75}\n'
+                    f'{sent_message.content}\n'
+                    f'{'-='*75}'
+                )
             )
         except discord.Forbidden:
             await interaction.response.send_message(
