@@ -1,13 +1,13 @@
 import discord, aiohttp, io
 from discord.ext import commands
-from utils.ImageManager import get_image_url_from_message, get_tv_image_file
+from utils.ImageManager import get_image_url_from_message, get_monitor_image_file
 
 
 def setup_commands(bot: commands.Bot):
     
     @bot.command(
-        name='televisao',
-        help='Coloca a imagem de uma mensagem mencionada na tela da TV.'
+        name='monitor',
+        help='Coloca a imagem de uma mensagem mencionada na tela do monitor.'
     )
     async def televisao(ctx: commands.Context):
         
@@ -42,6 +42,6 @@ def setup_commands(bot: commands.Bot):
                     return
                 image_bytes = io.BytesIO(await response.read())
 
-        image_file = get_tv_image_file(reference_image=image_bytes)
+        image_file = get_monitor_image_file(reference_image=image_bytes)
         
         await ctx.send(file=image_file, reference=ctx.message)

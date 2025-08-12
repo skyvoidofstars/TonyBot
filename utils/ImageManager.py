@@ -75,6 +75,40 @@ def get_tv_image_file(reference_image: io.BytesIO):
     
     return image_file
 
+
+def get_monitor_image_file(reference_image: io.BytesIO):
+    reference_image = Image.open(reference_image).convert('RGBA')
+    monitor_image = Image.open('assets/marina_monitor.png').convert('RGBA')
+
+    width, height = reference_image.size
+    cantos_origem = [(0, 0), (width, 0), (width, height), (0, height)]
+
+    corners: list[tuple[int, int]] = [
+        (82, 304), # -> Canto Superior Esquerdo
+        (435, 211), # -> Canto Superior Direito
+        (451, 454), # -> Canto Inferior Direito
+        (103, 554) # -> Canto Inferior Esquerdo
+    ]
+
+    coeffs = _find_coeffs(cantos_origem, corners)
+
+    distorted_image = reference_image.transform(
+        size=monitor_image.size,
+        method=Image.Transform.PERSPECTIVE,
+        data=coeffs,
+        resample=Image.Resampling.BICUBIC, 
+    )
+
+    output_buffer = io.BytesIO()
+    imagem_final = Image.alpha_composite(monitor_image, distorted_image)
+    imagem_final.save(output_buffer, format='PNG')
+    output_buffer.seek(0)
+
+    image_file: discord.File = discord.File(fp=output_buffer, filename='monitor_mec.png')
+    
+    return image_file
+
+
 def get_image_url_from_message(message: discord.Message) -> str | None:
     if not message.attachments:
         return None
